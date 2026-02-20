@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import logo from '/src/assets/logo.png'
 import { Eye, EyeOff,GraduationCap } from "lucide-react"; 
 
 const FacultySignupForm = () => {

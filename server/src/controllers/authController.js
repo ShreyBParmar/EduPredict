@@ -64,23 +64,23 @@ export const registerStudent = async (req, res) => {
   }  
     */
    try {
-    const { fullName, email, password, enrollmentId, year } = req.body;
+    const { fullName, email, password, enrollmentId, semester } = req.body;
 
-    // 1️⃣ basic validation
-    if (!fullName || !email || !password || !year || !enrollmentId) {
+    // 1️basic validation
+    if (!fullName || !email || !password || !semester || !enrollmentId) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // 2️⃣ check student existence (by enrollmentId)
+    // check student existence (by enrollmentId)
     const studentExist = await Student.findOne({ enrollmentId });
-    
+
     if (studentExist) {
       return res.status(409).json({
         message: "Student already enrolled with this ID"
       });
     }
 
-    // 3️⃣ check email existence (auth)
+    // check email existence (auth)
     const userExist = await User.findOne({ email });
     if (userExist) {
       return res.status(409).json({
@@ -88,17 +88,17 @@ export const registerStudent = async (req, res) => {
       });
     }
 
-    // 5️⃣ hash password
+    //  hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-     // 4️⃣ create student profile
+     // create student profile
     const student = await Student.create({
       fullName,
       enrollmentId,
-      year
+      semester
     });
 
-    // 6️⃣ create auth user
+    // create auth user
     await User.create({
       email,
       password: hashedPassword,
@@ -106,7 +106,7 @@ export const registerStudent = async (req, res) => {
       refId: student._id
     });
 
-    // 7️⃣ send response ONCE
+    // send response ONCE
     return res.status(201).json({
       success: true,
       message: "Student registered successfully",
@@ -118,7 +118,7 @@ export const registerStudent = async (req, res) => {
   }
 };
 
-//Registration of faculty
+//Registration of faculty  safsdf 
 export const registerFaculty = async (req, res) => {
   /*
   try {
@@ -164,12 +164,12 @@ export const registerFaculty = async (req, res) => {
    try {
     const { fullName, email, password, facultyId, role } = req.body;
 
-    // 1️⃣ basic validation
+    // basic validation
     if (!fullName || !email || !password || !role || !facultyId) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // 2️⃣ check student existence (by enrollmentId)
+    //  check student existence (by enrollmentId)
     const facultyExist = await Faculty.findOne({ facultyId });
     
     if (facultyExist) {
@@ -178,7 +178,7 @@ export const registerFaculty = async (req, res) => {
       });
     }
 
-    // 3️⃣ check email existence (auth)
+    // check email existence (auth)
     const userExist = await User.findOne({ email });
     if (userExist) {
       return res.status(409).json({
@@ -186,17 +186,17 @@ export const registerFaculty = async (req, res) => {
       });
     }
 
-    // 5️⃣ hash password
+    //  hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-     // 4️⃣ create student profile
+     //  create student profile
     const faculty = await Faculty.create({
       fullName,
       facultyId,
       role
     });
 
-    // 6️⃣ create auth user
+    // create auth user
     await User.create({
       email,
       password: hashedPassword,
@@ -204,7 +204,7 @@ export const registerFaculty = async (req, res) => {
       refId: faculty._id
     });
 
-    // 7️⃣ send response ONCE
+    //  send response ONCE
     return res.status(201).json({
       success: true,
       message: "Faculty registered successfully",
@@ -318,7 +318,7 @@ export const login =async(req,res)=>{
   try{
     const { email, password } = req.body;
 
-  // 1️⃣ find user in USERS collection
+  //  find user in USERS collection
   const user = await User.findOne({ email }).select("+password");
 
   if (!user) {
@@ -330,21 +330,21 @@ export const login =async(req,res)=>{
 }
 
 
-  // 2️⃣ compare password
+  // compare password
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
     return res.status(401).json({ message: "Invalid email or password" });
   }
 
-  // 3️⃣ generate token
+  // generate token
   const token = jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
 
-  // 4️⃣ send role to frontend
+  // send role to frontend
   return res.status(200).json({
     success: true,
     token,
@@ -356,15 +356,17 @@ export const login =async(req,res)=>{
   }
 }
 
+
 export const forgotPassword=async(req,res)=>{
-  try {
+  console.log("Forgot password hit"); 
+  try { 
     const { email } = req.body;
 
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    // 1️⃣ Find user by email
+    // Find user by email
     const user = await User.findOne({ email });
 
     if (!user || !user.isActive) {
@@ -373,22 +375,22 @@ export const forgotPassword=async(req,res)=>{
       });
     }
 
-    // 2️⃣ Generate reset token
+    // Generate reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
 
-    // 3️⃣ Hash token before saving
+    // Hash token before saving
     const hashedToken = crypto
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
 
-    // 4️⃣ Save token + expiry
+    // Save token + expiry
     user.resetPasswordToken = hashedToken;
     user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     await user.save();
 
-    // 5️⃣ Create reset link (send via email in production)
+    // Create reset link (send via email in production)
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
     // For development (temporary)
@@ -410,25 +412,31 @@ export const resetPassword = async (req, res) => {
     const { token } = req.params;
     const { password, confirmPassword } = req.body;
 
+    console.log("Now:", Date.now());
+    
+
+
     if (!password || !confirmPassword) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     if (password !== confirmPassword) {
-      return res.status(400).json({ message: "Passwords do not match" });
+      return res.status(400).json({ message: "Passwords doesn't match" });
     }
 
-    // 1️⃣ Hash received token
+    // Hash received token
     const hashedToken = crypto
       .createHash("sha256")
       .update(token)
       .digest("hex");
 
-    // 2️⃣ Find matching user
+    // Find matching user
     const user = await User.findOne({
       resetPasswordToken: hashedToken,
       resetPasswordExpire: { $gt: Date.now() }
     });
+
+    console.log("Expiry:", user.resetPasswordExpire);
 
     if (!user) {
       return res.status(400).json({
@@ -436,10 +444,10 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // 3️⃣ Hash new password
+    // Hash new password
     user.password = await bcrypt.hash(password, 12);
 
-    // 4️⃣ Clear reset fields
+    // Clear reset fields
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
 

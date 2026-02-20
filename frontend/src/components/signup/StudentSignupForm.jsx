@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import logo from '/src/assets/logo.png'
 import { Eye, EyeOff,GraduationCap } from "lucide-react"; 
 
 const StudentSignupForm = () => {
@@ -10,7 +9,7 @@ const StudentSignupForm = () => {
     password: "",
     confirmPassword: "",
     enrollmentId: "",
-    year: ""
+    semester: ""
   })
 
    const navigate = useNavigate();
@@ -42,7 +41,7 @@ const StudentSignupForm = () => {
       body: JSON.stringify({
       ...formData,
       enrollmentId: Number(formData.enrollmentId),
-      year: Number(formData.year)
+      semester: Number(formData.semester)
     })
     });
 
@@ -152,17 +151,21 @@ const StudentSignupForm = () => {
         />
 
         <select
-          name="year"
+          name="semester"
           className="border p-2 rounded"
-          value={formData.year}
+          value={formData.semester}
           onChange={handleChange}
           required
         >
-          <option value="" className="font-bold">Select Year</option>
-          <option value="1">First Year</option>
-          <option value="2">Second Year</option>
-          <option value="3">Third Year</option>
-          <option value="4">Fourth Year</option>
+          <option value="" className="font-bold">Select Semester</option>
+          <option value="1">1st</option>
+          <option value="2">2nd</option>
+          <option value="3">3rd</option>
+          <option value="4">4th</option>
+          <option value="5">5th</option>
+          <option value="6">6th</option>
+          <option value="7">7th</option>
+          <option value="8">8th</option>
         </select> 
 
         <button

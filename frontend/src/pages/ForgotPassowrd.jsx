@@ -7,8 +7,11 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Submitted");
+    console.log("Email: ",email);
+    
 
-    const res = await fetch("/api/auth/forgot-password", {
+    const res = await fetch("http://localhost:5000/api/auth/forgot-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
@@ -16,12 +19,12 @@ const ForgotPassword = () => {
 
     const data = await res.json();
 
-    if (!res.ok) {
-      setMessage(data.message || "Something went wrong");
+    if (!data.ok) {
+      alert(data.message || "Something went wrong");
       return;
     }
 
-    setMessage("Reset link sent. Check console/email.");
+    alert("Reset link sent. Check console/email.");
   };
 
   return (

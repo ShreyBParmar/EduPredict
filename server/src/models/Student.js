@@ -12,7 +12,7 @@ const studentSchema=new mongoose.Schema(
             required: true,
             minlength: 12
         },
-        year:{
+        semester:{
             type: Number,
             required: true
         }

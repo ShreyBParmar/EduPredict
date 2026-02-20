@@ -1,33 +1,58 @@
 import {useState} from 'react'
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Eye, EyeOff,GraduationCap } from "lucide-react";
 
 const ResetPassword = () => {
-    const { token } = useParams();
+  const [formData, setFormData] = useState({
+    password: "",
+    confirmPassword: ""
+  })
+
+  const { token } = useParams();
   const navigate = useNavigate();
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch(`/api/auth/reset-password/${token}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password, confirmPassword })
-    });
+      try{
+        if (formData.password !== formData.confirmPassword) {
+        alert("Passwords do not match")
+        return
+      }
 
-    const data = await res.json();
+      const res = await fetch(`http://localhost:5000/api/auth/reset-password/${token}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({...formData})
+      });
 
-    if (!res.ok) {
-      setMessage(data.message || "Reset failed");
-      return;
-    }
+      const data = await res.json();
 
-    setMessage("Password reset successful");
-    setTimeout(() => navigate("/login"), 2000);
+      if (!data.success) {
+        setMessage(data.message || "Reset failed");
+        return;
+      }
+
+      setMessage("Password reset successful");
+      setTimeout(() => navigate("/login"), 2000);
+  }
+
+  catch(error){
+    console.error(error);
+    alert("Reset password failed");
+  }
 }
 
   return (
@@ -46,7 +71,7 @@ const ResetPassword = () => {
 
       <div className="relative">
                 <input
-                  type={setPassword ? "text" : "password"}
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Password"
                   value={formData.password}
@@ -57,7 +82,7 @@ const ResetPassword = () => {
 
                 <button
                   type="button"
-                  onClick={() => setPassword(!setPassword)}
+                  onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -66,7 +91,7 @@ const ResetPassword = () => {
 
               <div className="relative">
                 <input
-                  type={setConfirmPassword ? "text" : "password"}
+                  type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
                   placeholder="Confirm Password"
                   value={formData.confirmPassword}
@@ -78,7 +103,7 @@ const ResetPassword = () => {
                 <button
                   type="button"
                   onClick={() =>
-                    setConfirmPassword(!setConfirmPassword)
+                    setShowConfirmPassword(!showConfirmPassword)
                   }
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
@@ -86,7 +111,7 @@ const ResetPassword = () => {
                 </button>
               </div>
 
-      <button type="submit">Reset Password</button>
+      <button type="submit" className="mt-2 bg-blue-700 text-white py-2 rounded hover:bg-blue-500 hover:text-black">Reset Password</button>
       {message && <p>{message}</p>}
     </form>
     </div>
