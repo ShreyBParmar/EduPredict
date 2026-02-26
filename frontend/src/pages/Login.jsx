@@ -2,6 +2,7 @@ import { useState } from "react"
 import logo from '/src/assets/logo.png'
 import { Eye, EyeOff,GraduationCap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../context/authContext.jsx';
 
 const Login = () => {
 
@@ -11,6 +12,7 @@ const Login = () => {
     password: ""
   })
 
+   const auth = useAuth();
   const navigate= useNavigate();
   
    const handleChange = (e) => {
@@ -29,65 +31,49 @@ const Login = () => {
     e.preventDefault();
 
     try{
-      /*
-      const res= await fetch('http://localhost:5000/api/auth/login_student',{
+      const res= await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-        email: formData.email,
-        password: formData.password
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          email: formData.email,
+          password: formData.password
         })
       });
 
-    const data = await res.json();
+      const data=await res.json();
 
-    if (!data.ok) {
-      alert(data.message || "Login failed");
-      return;
-    }
+      if (!res.ok) {
+        alert(data.message || "Login failed");
+        return;
+      }
 
-    alert("Login successful");
-    */
-    
-   const res= await fetch("http://localhost:5000/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ 
-      email: formData.email,
-      password: formData.password
-    })
-   })
+      // save auth state via context (includes token, role, fullName)
+      auth.loginAction({
+        token: data.token,
+        role: data.role,
+        fullName: data.fullName
+      });
 
-  const data=await res.json()
+      // also keep token separately if other code expects it
+      localStorage.setItem("token", data.token);
 
-  if (!res.ok) {
-  alert(data.message || "Login failed");
-  return;
-}
-
-// 🔐 store token
-localStorage.setItem("token", data.token);
-
-  if (data.role === "student") {
-    navigate("/student/dashboard");
-  } else {
-    navigate("/faculty/dashboard");
-  }
-}
-    catch(error){
+      // redirect based on role
+      if (data.role === "student") {
+        navigate("/student/dashboard");
+      } else {
+        navigate("/faculty/dashboard");
+      }
+    } catch(error){
       console.error(error);
       alert("Login failed");
     }
-}
+  }
 
   return (
     <div>
-     <div className="min-h-screen flex items-center justify-center ">
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white p-6 rounded-lg shadow-xl/70 w-96 grid gap-3">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-6 rounded-lg shadow-xl/70 w-96 grid gap-3">
 
             <div className="relative flex items-center justify-center">
               <div className="bg-blue-600 w-10 h-10 rounded-2xl absolute left-0 flex items-center justify-center">
@@ -140,9 +126,7 @@ localStorage.setItem("token", data.token);
                 className="mt-2 bg-blue-700 text-white py-2 rounded hover:bg-blue-500 hover:text-black">
                 Submit
               </button>
-            </form>
-              
-            </div>
+      </form>
     </div>
   )
 }

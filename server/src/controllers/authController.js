@@ -344,13 +344,25 @@ export const login =async(req,res)=>{
     { expiresIn: "1d" }
   );
 
-  // send role to frontend
+  // look up profile to get full name
+  let fullName = "";
+  if (user.role === "student") {
+    const student = await Student.findById(user.refId);
+    fullName = student ? student.fullName : "";
+  } else if (user.role === "faculty") {
+    const faculty = await Faculty.findById(user.refId);
+    fullName = faculty ? faculty.fullName : "";
+  }
+
+  // send role and name to frontend
   return res.status(200).json({
     success: true,
     token,
-    role: user.role
+    role: user.role,
+    fullName
   });
   }
+  
   catch(error){
     res.status(500).json({message: error.message});
   }
