@@ -16,6 +16,11 @@ const Header = () => {
             <h2 className="text-xl font-semibold text-center pr-3">
               Welcome {user?.fullName || ''}
             </h2>
+            {user?.role === 'student' && user?.enrollmentId && (
+              <div className="text-xl font-semibold text-center pr-3">
+                ID: {user.enrollmentId}
+              </div>
+            )}
         </div>
     </div>
   )

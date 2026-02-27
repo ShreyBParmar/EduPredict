@@ -19,7 +19,9 @@ const AuthContext = createContext(null);
 
     const logOut = () => {
       setUser(null);
-      localStorage.removeItem("userToken");
+      // clear persisted user and token
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
     };
 
     return (

@@ -345,21 +345,29 @@ export const login =async(req,res)=>{
   );
 
   // look up profile to get full name
+  // look up profile to get full name and role-specific ID
   let fullName = "";
+  let enrollmentId = null;
+  let facultyId = null;
+
   if (user.role === "student") {
     const student = await Student.findById(user.refId);
     fullName = student ? student.fullName : "";
+    enrollmentId = student ? student.enrollmentId : null;
   } else if (user.role === "faculty") {
     const faculty = await Faculty.findById(user.refId);
     fullName = faculty ? faculty.fullName : "";
+    facultyId = faculty ? faculty.facultyId : null;
   }
 
-  // send role and name to frontend
+  // send role, name and role-specific id to frontend
   return res.status(200).json({
     success: true,
     token,
     role: user.role,
-    fullName
+    fullName,
+    enrollmentId,
+    facultyId
   });
   }
   

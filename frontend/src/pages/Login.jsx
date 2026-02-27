@@ -51,7 +51,9 @@ const Login = () => {
       auth.loginAction({
         token: data.token,
         role: data.role,
-        fullName: data.fullName
+        fullName: data.fullName,
+        enrollmentId: data.enrollmentId ?? null,
+        facultyId: data.facultyId ?? null
       });
 
       // also keep token separately if other code expects it
@@ -71,6 +73,7 @@ const Login = () => {
 
   return (
     <div>
+      <div className="min-h-screen flex items-center justify-center ">
       <form
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-lg shadow-xl/70 w-96 grid gap-3">
@@ -127,6 +130,7 @@ const Login = () => {
                 Submit
               </button>
       </form>
+      </div>
     </div>
   )
 }
