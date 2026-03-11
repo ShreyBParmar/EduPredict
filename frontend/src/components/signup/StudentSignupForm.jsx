@@ -29,8 +29,12 @@ const StudentSignupForm = () => {
     
     try{
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match")
+      alert("Passwords does not match")
       return
+    }
+
+    if(formData.password.length <= 6){
+      alert("Password should be more than 6 characters")
     }
 
    const res= await fetch("http://localhost:5000/api/auth/register_student", {

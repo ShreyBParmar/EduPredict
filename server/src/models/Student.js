@@ -7,10 +7,10 @@ const studentSchema=new mongoose.Schema(
             required: true,
         },
         enrollmentId:{
-            type: Number,
+            type: String,
             unique:true,
             required: true,
-            minlength: 12
+            maxlength: 9
         },
         semester:{
             type: Number,

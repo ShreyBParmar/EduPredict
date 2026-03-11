@@ -1,5 +1,5 @@
 import React from 'react'
-import { useAuth } from '../context/authContext.jsx'
+import { useAuth } from '../../context/authContext';
 
 const FacultyDashboard = () => {
   const { user } = useAuth();
@@ -10,7 +10,7 @@ const FacultyDashboard = () => {
         Welcome {user?.fullName || 'Faculty'}
       </h1>
       {user?.role === 'faculty' && user?.facultyId && (
-        <div className="text-sm text-gray-600">ID: {user.facultyId}</div>
+        <div className="text-sm text-gray-600">ID: {user.facultyId} </div>
       )}
     </div>
   )

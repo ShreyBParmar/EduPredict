@@ -4,6 +4,8 @@ import Student from "../models/Student.js";
 import Faculty from "../models/Faculty.js"
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import MasterSubject from "../models/MasterSubject.js";
+import StudentSubject from "../models/StudentSubject.js";
 
 //Registration of student
 export const registerStudent = async (req, res) => {
@@ -67,7 +69,7 @@ export const registerStudent = async (req, res) => {
     const { fullName, email, password, enrollmentId, semester } = req.body;
 
     // 1️basic validation
-    if (!fullName || !email || !password || !semester || !enrollmentId) {
+    if (!fullName || !email || !password || !enrollmentId || !semester) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -105,6 +107,17 @@ export const registerStudent = async (req, res) => {
       role: "student",
       refId: student._id
     });
+
+    const subjects = await MasterSubject.find({ semester });
+
+    // 4️⃣ assign subjects to student
+    const studentSubjects = subjects.map((subject) => ({
+      student: student._id,
+      subject: subject._id,
+      semester
+    }));
+
+    await StudentSubject.insertMany(studentSubjects);
 
     // send response ONCE
     return res.status(201).json({
