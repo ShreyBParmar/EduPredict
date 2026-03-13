@@ -62,8 +62,6 @@ const seedSubjects = async () => {
 
   try {
 
-    //await MasterSubject.deleteMany(); // optional reset
-
     await MasterSubject.insertMany(subjects);
 
     console.log("Subjects seeded successfully");
