@@ -32,6 +32,10 @@ const FacultySignupForm = () => {
             alert("Passwords do not match")
             return
           }
+
+          if(formData.password.length <= 6){
+            alert("Password should be more than 6 characters")
+          }
           
           const res=await fetch("http://localhost:5000/api/auth/register_faculty", {
             method: "POST",

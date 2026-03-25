@@ -6,4 +6,4 @@ const router = express.Router();
 
 router.get("/dashboard", protect, getStudentDashboard);
 
-export default router;
+export default router;  

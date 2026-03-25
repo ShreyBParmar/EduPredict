@@ -5,7 +5,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  // 🔁 Persist login on refresh
+  // persist login
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
 
@@ -14,26 +14,12 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // 🔐 LOGIN (works for both student & faculty)
-  const loginAction = (data) => {
-    const userData = {
-      token: data.token,
-      role: data.role,
-      fullName: data.fullName,
-
-      // role-based fields
-      enrollmentId: data.enrollmentId || null,
-      facultyId: data.facultyId || null,
-    };
-
-    setUser(userData);
-
-    // store in localStorage
-    localStorage.setItem("user", JSON.stringify(userData));
+  const login = (data) => {
+    setUser(data.user);
+    localStorage.setItem("user", JSON.stringify(data.user));
     localStorage.setItem("token", data.token);
   };
 
-  // 🚪 LOGOUT
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
@@ -41,14 +27,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loginAction,
-        logout,
-        isAuthenticated: !!user,
-      }}
-    >
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -7,10 +7,9 @@ const facultySchema=new mongoose.Schema(
             required: true,
         },
         facultyId:{
-            type: Number,
+            type: String,
             required: true,
-            unique:true,
-            minlength: 4
+            unique:true
         },
         role:{
             type: String,

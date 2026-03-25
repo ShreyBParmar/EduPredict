@@ -28,6 +28,7 @@ const StudentSignupForm = () => {
     e.preventDefault()
     
     try{
+      
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords does not match")
       return

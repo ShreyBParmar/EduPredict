@@ -9,62 +9,7 @@ import StudentSubject from "../models/StudentSubject.js";
 
 //Registration of student
 export const registerStudent = async (req, res) => {
-  /*
-  try {
-    const { fullName, email, password, enrollmentId, year } = req.body;
-
-    if (!fullName || !email || !password || !year || !enrollmentId) {
-      return res.status(400).json({
-        message: "All fields are required"
-      });
-    }
-
-    // further logic: check existing user, hash password, save to DB
-    const userExist = await Student.findOne({enrollmentId});
-
-    if(userExist){
-      return res.status(409).json(
-        {
-          message: "Student is already already enrolled with this ID!!"
-        }
-      )
-    }
-
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      return res.status(409).json({
-        message: "Email already registered"
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    const student= await Student.create({
-        fullName,
-        email,
-        password:hashedPassword,
-        enrollmentId,
-        year 
-    })
-
-    await User.create({
-      email,
-      password: hashedPassword,
-      role: "student",
-      refId: student._id
-    });
-
-    return res.status(201).json({
-      success:true,
-      message:"Student registered successfully",
-      userId:student._id
-    })
-  } 
-  catch (error) {
-    res.status(500).json({ message: error.message });
-  }  
-    */
+  
    try {
     const { fullName, email, password, enrollmentId, semester } = req.body;
 
@@ -133,47 +78,6 @@ export const registerStudent = async (req, res) => {
 
 //Registration of faculty  safsdf 
 export const registerFaculty = async (req, res) => {
-  /*
-  try {
-    const { fullName, email, password, facultyId, role } = req.body;
-
-    if (!fullName || !email || !password || !facultyId || !role ) {
-      return res.status(400).json({
-        message: "All fields are required"
-      });
-    }
-
-    // further logic: check existing user, hash password, save to DB
-    const userExist = await Faculty.findOne({facultyId});
-
-    if(userExist){
-      return res.status(400).json(
-        {
-          message: "Faculty is already created!!"
-        }
-      )
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    const faculty= await Faculty.create({
-        fullName,
-        email,
-        password:hashedPassword,
-        facultyId,
-        role 
-    })
-
-    return res.status(201).json({
-      success:true,
-      message:"Faculty is saved",
-      userId:faculty._id
-    })
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }  
-    */
    try {
     const { fullName, email, password, facultyId, role } = req.body;
 
@@ -229,104 +133,6 @@ export const registerFaculty = async (req, res) => {
   }
 };
 
-//Login of student
-/*
-export const loginStudent =async(req,res)=>{
-  try{
-    
-    const{email,password}=req.body
-
-    if (!email || !password) {
-      return res.status(400).json({
-        message: "All fields are required"
-      });
-    }    
-
-    const student= await Student.findOne({email}).select("+password")
-
-    if(!student){
-      res.status(401).json({message: "Invalid email or password!!!"})
-    }
-
-    const ismatch=await bcrypt.compare(password,student.password)
-
-    if(!ismatch){
-      res.stauts(401).json({message: "Inalid email or password"})
-    }
-
-    return res.status(200).json({
-      success:true,
-      message:"Login successful",
-      userId: student._id
-    })
-
-    const token = jwt.sign(
-      { id: student._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    return res.status(200).json({
-      success:true,
-      message:"Login successful",
-      token
-    })
-     
-  }
-  catch(error){
-    res.status(500).json({message: error.message});
-  }
- 
-}
-
-//Login of faculty
-export const loginFaculty =async(req,res)=>{
-  try{
-
-    const{email,password}=req.body
-
-    if (!email || !password) {
-      return res.status(400).json({
-        message: "All fields are required"
-      });
-    }    
-
-    const faculty= await Faculty.findOne({email}).select("+password")
-
-    if(!faculty){
-      res.status(401).json({message: "Invalid email or password!!!"})
-    }
-
-    const ismatch=await bcrypt.compare(password,faculty.password)
-
-    if(!ismatch){
-      res.stauts(401).json({message: "Inalid email or password"})
-    }
-
-    return res.status(200).json({
-      success:true,
-      message:"Login successful",
-      userId: faculty._id
-    })
-
-    const token = jwt.sign(
-      { id: faculty._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    return res.stauts(200).json({
-      success:true,
-      message:"Login successful",
-      token
-    })
-  }
-  catch(error){
-    res.status(500).json({message: error.message});
-  }
-}
-*/
-
 export const login =async(req,res)=>{
   try{
     const { email, password } = req.body;
@@ -347,7 +153,7 @@ export const login =async(req,res)=>{
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    return res.status(401).json({ message: "Invalid email or password" });
+    return res.status(401).json({ message: "Password doesn't matched!!" });
   }
 
   // generate token

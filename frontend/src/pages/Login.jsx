@@ -4,6 +4,7 @@ import { Eye, EyeOff,GraduationCap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/authContext.jsx';
 
+
 const Login = () => {
 
   const [showPassword, setShowPassword] = useState(false);
@@ -47,6 +48,7 @@ const Login = () => {
         return;
       }
 
+      
       // save auth state via context (includes token, role, fullName)
       auth.loginAction({
         token: data.token,
