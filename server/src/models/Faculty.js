@@ -11,9 +11,13 @@ const facultySchema=new mongoose.Schema(
             required: true,
             unique:true
         },
-        role:{
-            type: String,
+        semester:{
+            type: Number,
             required: true
+        },
+        subjects:{
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: "Subject", 
         }
     },
     {

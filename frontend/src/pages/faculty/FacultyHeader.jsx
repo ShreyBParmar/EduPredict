@@ -46,14 +46,14 @@ const FacultyHeader = () => {
               {user?.fullName || ''}
             </h2>
             <p className="text-sm text-gray-500">
-              {user?.facultyId}
+              {user?.facultyId} • Computer Science
             </p>
           </div>
       
         </div>
       
         {/* Right Section: Logout */}
-        <button onClick={logout} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+        <button onClick={logout} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition hover:text-black">
         Logout
       </button>
       

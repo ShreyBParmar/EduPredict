@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff,GraduationCap } from "lucide-react"; 
+//import Student_signup_bg from "/src/assets/Student_signup_bg.jpg"
 
 const StudentSignupForm = () => {
   const [formData, setFormData] = useState({
@@ -69,7 +70,8 @@ const StudentSignupForm = () => {
 }
 
   return (
-    <div className="min-h-screen flex items-center justify-center ">
+    <div className="min-h-screen flex items-center justify-center">
+      <img src="Student_signup" />
       <form
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-lg shadow-xl/70 w-96 grid gap-3"

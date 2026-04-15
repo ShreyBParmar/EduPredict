@@ -30,7 +30,7 @@ const Header = () => {
   </div>
 
   {/* Right Section: Logout */}
-  <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+  <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition hover:text-black">
   Logout
 </button>
 
