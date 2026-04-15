@@ -79,10 +79,10 @@ export const registerStudent = async (req, res) => {
 //Registration of faculty  safsdf 
 export const registerFaculty = async (req, res) => {
    try {
-    const { fullName, email, password, facultyId, role } = req.body;
+    const { fullName, email, password, facultyId, semester, subjects } = req.body;
 
     // basic validation
-    if (!fullName || !email || !password || !role || !facultyId) {
+    if (!fullName || !email || !password || !semester || !subjects || !facultyId) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -110,7 +110,8 @@ export const registerFaculty = async (req, res) => {
     const faculty = await Faculty.create({
       fullName,
       facultyId,
-      role
+      semester,
+      subjects
     });
 
     // create auth user

@@ -15,10 +15,10 @@ const facultySchema=new mongoose.Schema(
             type: Number,
             required: true
         },
-        subjects:{
+        subjects:[{
             type: mongoose.Schema.Types.ObjectId, 
             ref: "Subject", 
-        }
+        }]
     },
     {
         timestamps:true
