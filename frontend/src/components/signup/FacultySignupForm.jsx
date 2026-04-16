@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react"; // ✅ added useEffect
+import { useState, useEffect,useContext } from "react"; // ✅ added useEffect
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff, GraduationCap } from "lucide-react"; 
+import { useAuth } from "../../context/authContext";
 
 const FacultySignupForm = () => {
+  const { setUser } = useAuth();
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -19,7 +22,7 @@ const FacultySignupForm = () => {
 
   const semesters = [1, 2, 3, 4, 5, 6, 7];
 
-  const [semester, setSemester] = useState(""); // ✅ keep this
+  const [semester, setLocalSemester] = useState(""); // ✅ keep this
   const [subjects, setSubjects] = useState([]);
   const [selectedSubjects, setSelectedSubjects] = useState([]);
 
@@ -41,6 +44,8 @@ const FacultySignupForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    setContextSemester(contextSemester); // 🔥 store globally
 
     try {
       if (formData.password !== formData.confirmPassword) {
@@ -59,7 +64,10 @@ const FacultySignupForm = () => {
         semester,
         subjects: selectedSubjects
       };
-
+  setUser({
+    ...data,
+    semester,
+  });
       const res = await fetch("http://localhost:5000/api/auth/register_faculty", {
         method: "POST",
         headers: {
@@ -88,17 +96,16 @@ const FacultySignupForm = () => {
 
   // ✅ FIXED: full URL + reset subjects
   useEffect(() => {
-     if (semester) {
-    console.log("Selected Sem:", semester)}; // ✅ debug
+ if (!semester) return; // 🔥 IMPORTANT
 
-    if (semester) {
-      fetch(`http://localhost:5000/api/subjects/?sem=${semester}`)
-        .then(res => res.json())
-        .then(data => {
-          setSubjects(data);
-          setSelectedSubjects([]); // reset when sem changes
-        });
-    }
+  console.log("Selected Sem:", semester);
+
+  fetch(`http://localhost:5000/api/subjects/?sem=${semester}`)
+    .then(res => res.json())
+    .then(data => {
+      setSubjects(data);
+      setSelectedSubjects([]);
+    }); 
   }, [semester]);
 
   return (
@@ -149,12 +156,18 @@ const FacultySignupForm = () => {
           </button>
         </div>
 
-        <input type="text" name="facultyId" placeholder="Faculty ID" className="border p-2 rounded" onChange={handleChange} required />
+        <input 
+          type="text" 
+          name="facultyId" 
+          placeholder="Faculty ID" 
+          className="border p-2 rounded" 
+          onChange={handleChange} 
+          required />
 
         {/* ✅ FIXED Semester */}
         <select
           value={semester}
-          onChange={(e) => setSemester(e.target.value)}
+          onChange={(e) => setLocalSemester(e.target.value)}
           className="border p-2 rounded"
           required
         >
