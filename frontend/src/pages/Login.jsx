@@ -4,7 +4,6 @@ import { Eye, EyeOff,GraduationCap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/authContext.jsx';
 
-
 const Login = () => {
 
   const [showPassword, setShowPassword] = useState(false);
@@ -55,12 +54,14 @@ const Login = () => {
         role: data.role,
         fullName: data.fullName,
         enrollmentId: data.enrollmentId ?? null,
-        facultyId: data.facultyId ?? null
+        facultyId: data.facultyId ?? null,
+        semester:data.semester
       });
 
       // also keep token separately if other code expects it
       localStorage.setItem("token", data.token);
-
+      console.log("Login detail: ", data);
+      
       // redirect based on role
       if (data.role === "student") {
         navigate("/student/dashboard");

@@ -1,10 +1,9 @@
-import { useState, useEffect,useContext } from "react"; // ✅ added useEffect
-import { useNavigate } from "react-router-dom"
-import { Eye, EyeOff, GraduationCap } from "lucide-react"; 
-import { useAuth } from "../../context/authContext";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff, GraduationCap } from "lucide-react";
 
 const FacultySignupForm = () => {
-  const { setUser } = useAuth();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -12,71 +11,94 @@ const FacultySignupForm = () => {
     password: "",
     confirmPassword: "",
     facultyId: "",
-    role: ""
-  })
+  });
 
-  const navigate = useNavigate();
+  const [semester, setSemester] = useState("");
+  const [subjects, setSubjects] = useState([]);
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const semesters = [1, 2, 3, 4, 5, 6, 7];
 
-  const [semester, setLocalSemester] = useState(""); // ✅ keep this
-  const [subjects, setSubjects] = useState([]);
-  const [selectedSubjects, setSelectedSubjects] = useState([]);
-
+  // 🔄 Handle input change
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+      [e.target.name]: e.target.value,
+    });
+  };
 
-  // ✅ NEW: handle subject checkbox
+  // 🔄 Handle subject selection
   const handleSubjectSelect = (id) => {
     if (selectedSubjects.includes(id)) {
-      setSelectedSubjects(selectedSubjects.filter(s => s !== id));
+      setSelectedSubjects(selectedSubjects.filter((s) => s !== id));
     } else {
       setSelectedSubjects([...selectedSubjects, id]);
     }
   };
 
+  // 🔥 Fetch subjects when semester changes
+  useEffect(() => {
+    if (!semester) return;
+
+    const fetchSubjects = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/subjects/?sem=${semester}`
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch subjects");
+
+        const data = await res.json();
+        setSubjects(data);
+        setSelectedSubjects([]); // reset on change
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchSubjects();
+  }, [semester]);
+
+  // 🚀 Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    setContextSemester(contextSemester); // 🔥 store globally
+
+    // validation
+    if (!semester) {
+      alert("Please select semester");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    if (formData.password.length <= 6) {
+      alert("Password should be more than 6 characters");
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      semester,
+      subjects: selectedSubjects,
+    };
 
     try {
-      if (formData.password !== formData.confirmPassword) {
-        alert("Passwords do not match");
-        return;
-      }
-
-      if (formData.password.length <= 6) {
-        alert("Password should be more than 6 characters");
-        return; // ✅ added return
-      }
-
-      // ✅ include semester + subjects
-      const payload = {
-        ...formData,
-        semester,
-        subjects: selectedSubjects
-      };
-  setUser({
-    ...data,
-    semester,
-  });
-      const res = await fetch("http://localhost:5000/api/auth/register_faculty", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
-
-      console.log("Faculty Signup Data:", payload);
+      const res = await fetch(
+        "http://localhost:5000/api/auth/register_faculty",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await res.json();
 
@@ -86,27 +108,14 @@ const FacultySignupForm = () => {
       }
 
       alert("Registration successful");
-      navigate("/login");
 
-    } catch (error) {
-      console.error(error);
+      // 🔥 go to login (login will store semester in context)
+      navigate("/login");
+    } catch (err) {
+      console.error(err);
       alert("Signup failed");
     }
-  }
-
-  // ✅ FIXED: full URL + reset subjects
-  useEffect(() => {
- if (!semester) return; // 🔥 IMPORTANT
-
-  console.log("Selected Sem:", semester);
-
-  fetch(`http://localhost:5000/api/subjects/?sem=${semester}`)
-    .then(res => res.json())
-    .then(data => {
-      setSubjects(data);
-      setSelectedSubjects([]);
-    }); 
-  }, [semester]);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -114,17 +123,32 @@ const FacultySignupForm = () => {
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-lg shadow-xl w-96 grid gap-3"
       >
-
+        {/* Header */}
         <div className="relative flex items-center justify-center">
           <div className="bg-blue-600 w-10 h-10 rounded-2xl absolute left-0 flex items-center justify-center">
             <GraduationCap className="w-6 h-6 text-white" />
           </div>
-          <h2 className="text-xl font-semibold">Signup</h2>
+          <h2 className="text-xl font-semibold">Faculty Signup</h2>
         </div>
 
-        <input type="text" name="fullName" placeholder="Full Name" className="border p-2 rounded" onChange={handleChange} required />
+        {/* Inputs */}
+        <input
+          type="text"
+          name="fullName"
+          placeholder="Full Name"
+          className="border p-2 rounded"
+          onChange={handleChange}
+          required
+        />
 
-        <input type="email" name="email" placeholder="Email" className="border p-2 rounded" onChange={handleChange} required />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          className="border p-2 rounded"
+          onChange={handleChange}
+          required
+        />
 
         {/* Password */}
         <div className="relative">
@@ -136,7 +160,11 @@ const FacultySignupForm = () => {
             onChange={handleChange}
             required
           />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2">
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2"
+          >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
@@ -151,23 +179,30 @@ const FacultySignupForm = () => {
             onChange={handleChange}
             required
           />
-          <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2">
+          <button
+            type="button"
+            onClick={() =>
+              setShowConfirmPassword(!showConfirmPassword)
+            }
+            className="absolute right-3 top-1/2 -translate-y-1/2"
+          >
             {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
 
-        <input 
-          type="text" 
-          name="facultyId" 
-          placeholder="Faculty ID" 
-          className="border p-2 rounded" 
-          onChange={handleChange} 
-          required />
+        <input
+          type="text"
+          name="facultyId"
+          placeholder="Faculty ID"
+          className="border p-2 rounded"
+          onChange={handleChange}
+          required
+        />
 
-        {/* ✅ FIXED Semester */}
+        {/* Semester */}
         <select
           value={semester}
-          onChange={(e) => setLocalSemester(e.target.value)}
+          onChange={(e) => setSemester(e.target.value)}
           className="border p-2 rounded"
           required
         >
@@ -179,10 +214,12 @@ const FacultySignupForm = () => {
           ))}
         </select>
 
-        {/* ✅ Subjects */}
+        {/* Subjects */}
         {subjects.length > 0 && (
           <div className="mt-3 border p-2 rounded max-h-40 overflow-y-auto">
-            <p className="text-sm font-semibold mb-2">Select Subjects:</p>
+            <p className="text-sm font-semibold mb-2">
+              Select Subjects:
+            </p>
 
             {subjects.map((sub) => (
               <label key={sub._id} className="block text-sm">
@@ -198,19 +235,18 @@ const FacultySignupForm = () => {
           </div>
         )}
 
-        <button type="submit" className="mt-2 bg-blue-700 text-white py-2 rounded hover:bg-blue-500">
+        <button className="mt-2 bg-blue-700 text-white py-2 rounded hover:bg-blue-500">
           Register
         </button>
 
         <span>
-          <a href="/login" className="hover:underline text-blue-500">
+          <a href="/login" className="text-blue-500 hover:underline">
             Already have an account?
           </a>
         </span>
-
       </form>
     </div>
-  )
-}
+  );
+};
 
 export default FacultySignupForm;

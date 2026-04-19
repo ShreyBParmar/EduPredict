@@ -76,7 +76,7 @@ export const registerStudent = async (req, res) => {
   }
 };
 
-//Registration of faculty  safsdf 
+//Registration of faculty
 export const registerFaculty = async (req, res) => {
    try {
     const { fullName, email, password, facultyId, semester, subjects } = req.body;
@@ -169,6 +169,7 @@ export const login =async(req,res)=>{
   let fullName = "";
   let enrollmentId = null;
   let facultyId = null;
+  let semester=null;
 
   if (user.role === "student") {
     const student = await Student.findById(user.refId);
@@ -178,6 +179,7 @@ export const login =async(req,res)=>{
     const faculty = await Faculty.findById(user.refId);
     fullName = faculty ? faculty.fullName : "";
     facultyId = faculty ? faculty.facultyId : null;
+    semester = faculty ? faculty.semester : null
   }
 
   // send role, name and role-specific id to frontend
@@ -187,7 +189,8 @@ export const login =async(req,res)=>{
     role: user.role,
     fullName,
     enrollmentId,
-    facultyId
+    facultyId,
+    semester
   });
   }
   

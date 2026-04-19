@@ -4,10 +4,11 @@ import { useAuth } from "../../context/authContext";
 
 const SubjectSelector = () => {
   const { selectedSubject, setSelectedSubject } = useSubject();
-  const { user} = useAuth();
+  const {user} = useAuth();
 
-  const semester = user?.semester || "No subject selected";
-
+  const semester = user?.semester;
+  console.log("Sem:"+semester);
+  
   const [subjects, setSubjects] = useState([]);
 
   // 🔥 Fetch subjects when semester changes
@@ -43,7 +44,7 @@ const SubjectSelector = () => {
          <h2 className="mb-4 text-gray-600">
           Semester: <span className="font-bold">{semester}</span>
         </h2>
-
+           
 
           {/* ✅ Subject Dropdown */}
           <select
