@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+//import Subject from "./Subject";
 
 const facultySchema=new mongoose.Schema(
     {
@@ -17,7 +18,7 @@ const facultySchema=new mongoose.Schema(
         },
         subjects:[{
             type: mongoose.Schema.Types.ObjectId, 
-            ref: "Subject", 
+            ref: "MasterSubject",
         }]
     },
     {

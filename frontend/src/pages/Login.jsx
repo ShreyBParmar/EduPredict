@@ -55,7 +55,8 @@ const Login = () => {
         fullName: data.fullName,
         enrollmentId: data.enrollmentId ?? null,
         facultyId: data.facultyId ?? null,
-        semester:data.semester
+        semester:data.semester,
+        subjects: data.subjects
       });
 
       // also keep token separately if other code expects it

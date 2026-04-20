@@ -6,6 +6,7 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import MasterSubject from "../models/MasterSubject.js";
 import StudentSubject from "../models/StudentSubject.js";
+import Subject from "../models/Subject.js";
 
 //Registration of student
 export const registerStudent = async (req, res) => {
@@ -140,6 +141,7 @@ export const login =async(req,res)=>{
 
   //  find user in USERS collection
   const user = await User.findOne({ email }).select("+password");
+  
 
   if (!user) {
     return res.status(401).json({ message: "Invalid email or password" });
@@ -170,16 +172,22 @@ export const login =async(req,res)=>{
   let enrollmentId = null;
   let facultyId = null;
   let semester=null;
+  let subjects=[];
 
   if (user.role === "student") {
     const student = await Student.findById(user.refId);
+
     fullName = student ? student.fullName : "";
     enrollmentId = student ? student.enrollmentId : null;
+
   } else if (user.role === "faculty") {
-    const faculty = await Faculty.findById(user.refId);
+    const faculty = await Faculty.findById(user.refId).populate("subjects","subjectName")
+    
+
     fullName = faculty ? faculty.fullName : "";
     facultyId = faculty ? faculty.facultyId : null;
-    semester = faculty ? faculty.semester : null
+    semester = faculty ? faculty.semester : null;
+    subjects = faculty?.subjects || [];
   }
 
   // send role, name and role-specific id to frontend
@@ -190,7 +198,8 @@ export const login =async(req,res)=>{
     fullName,
     enrollmentId,
     facultyId,
-    semester
+    semester,
+    subjects
   });
   }
   
