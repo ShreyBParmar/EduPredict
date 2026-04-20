@@ -35,7 +35,11 @@ const studentSubjectSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-
+  
+  assignment:{
+    type: Number,
+    default: 0
+  },
   grade: {
     type: String,
     default: "-"

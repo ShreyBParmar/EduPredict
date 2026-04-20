@@ -1,6 +1,37 @@
 import axios from "axios";
 
+const API = "http://localhost:5000/api/faculty";
+
 export const getFacultyProfile = async () => {
+  const token = localStorage.getItem("token");
+  const res = await axios.get(`${API}/profile`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return res.data;
+};
+
+export const getStudentsBySemester = async (semester) => {
+  const token = localStorage.getItem("token");
+  const res = await axios.get(`${API}/students/${semester}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return res.data;
+};
+
+export const markAttendance = async (subjectId, semester, attendanceData) => {
+  const token = localStorage.getItem("token");
+  const res = await axios.post(
+    `${API}/mark-attendance`,
+    { subjectId, semester, attendanceData },
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+  return res.data;
+};
+
+{/*
+  export const getFacultyProfile = async () => {
 
   const token = localStorage.getItem("token");
 
@@ -15,7 +46,7 @@ export const getFacultyProfile = async () => {
 
   return res.data;
 };
-
+*/ }
 {/* 
 const API = "http://localhost:5000/api/faculty";
 
