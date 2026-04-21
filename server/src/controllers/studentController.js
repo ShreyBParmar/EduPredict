@@ -9,13 +9,15 @@ export const getStudentDashboard = async (req, res) => {
     const student = await Student.findById(studentId);
 
     const subjects = await StudentSubject.find({ student: studentId })
-      .populate("subject", "subjectName");
+      .populate("subject", "subjectName").select("subject");
+
+    const formattedSubjects = subjects.map(s => s.subject);
 
     res.json({
       success: true,
       studentName: student.fullName,
       semester: student.semester,
-      subjects
+      subjects: formattedSubjects
     });
 
   } catch (error) {

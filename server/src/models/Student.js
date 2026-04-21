@@ -15,7 +15,11 @@ const studentSchema=new mongoose.Schema(
         semester:{
             type: Number,
             required: true
-        }
+        },
+        subjects:[{
+                    type: mongoose.Schema.Types.ObjectId, 
+                    ref: "MasterSubject",
+                }]
     },
     {
         timestamps:true

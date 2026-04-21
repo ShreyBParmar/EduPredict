@@ -11,7 +11,7 @@ const StudentDashboard = () => {
 
     const fetchData = async () => {
       const data = await getStudentDashboard();
-      setSubjects(data);
+      setSubjects(data.subjects);
     };
 
     fetchData();

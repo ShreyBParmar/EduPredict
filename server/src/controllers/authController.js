@@ -175,10 +175,12 @@ export const login =async(req,res)=>{
   let subjects=[];
 
   if (user.role === "student") {
-    const student = await Student.findById(user.refId);
+    const student = await Student.findById(user.refId).populate("subjects","subjectName");
 
     fullName = student ? student.fullName : "";
     enrollmentId = student ? student.enrollmentId : null;
+    semester = student ? student.semester : null;  // ✅ include semester
+    subjects = student ? student.subjects : [];
 
   } else if (user.role === "faculty") {
     const faculty = await Faculty.findById(user.refId).populate("subjects","subjectName")
