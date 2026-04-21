@@ -68,13 +68,15 @@ const UploadMarks = () => {
       // Validate marks before submission
       const maxMark = examTypes.find(e => e.value === examType)?.max || 30
       const marksToSubmit = {}
+      let hasMarks = false
       
       for (const [studentId, markValue] of Object.entries(marks)) {
+        // Skip empty fields
         if (markValue === '') {
-          alert('Please enter marks for all students')
-          return
+          continue
         }
         
+        hasMarks = true
         const mark = parseFloat(markValue)
         if (isNaN(mark) || mark < 0 || mark > maxMark) {
           alert(`${examType} marks must be between 0 and ${maxMark}`)
@@ -82,6 +84,12 @@ const UploadMarks = () => {
         }
         
         marksToSubmit[studentId] = mark
+      }
+
+      // Check if at least one mark was entered
+      if (!hasMarks) {
+        alert('Please enter marks for at least one student')
+        return
       }
 
       await updateMarks(selectedSubject._id, user.semester, examType, marksToSubmit)
