@@ -30,6 +30,29 @@ export const markAttendance = async (subjectId, semester, attendanceData) => {
   return res.data;
 };
 
+export const updateMarks = async (subjectId, semester, examType, marksData) => {
+  const token = localStorage.getItem("token");
+  const res = await axios.post(
+    `${API}/update-marks`,
+    { subjectId, semester, examType, marksData },
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+  return res.data;
+};
+
+export const getSubjectMarksData = async (subjectId, semester) => {
+  const token = localStorage.getItem("token");
+  const res = await axios.get(
+    `${API}/subject-marks/${subjectId}?semester=${semester}`,
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+  return res.data;
+};
+
 {/*
   export const getFacultyProfile = async () => {
 

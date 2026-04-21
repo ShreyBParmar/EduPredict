@@ -40,6 +40,12 @@ const studentSubjectSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+
+  totalMarks: {
+    type: Number,
+    default: 0
+  },
+
   grade: {
     type: String,
     default: "-"
