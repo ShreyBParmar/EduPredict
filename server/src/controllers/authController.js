@@ -56,7 +56,13 @@ export const registerStudent = async (req, res) => {
 
     const subjects = await MasterSubject.find({ semester });
 
-    // 4️⃣ assign subjects to student
+    // Store subject IDs in student model
+    const subjectIds = subjects.map(s => s._id);
+    
+    // Update student with assigned subjects
+    await Student.findByIdAndUpdate(student._id, { subjects: subjectIds });
+
+    // assign subjects to student in StudentSubject collection
     const studentSubjects = subjects.map((subject) => ({
       student: student._id,
       subject: subject._id,
@@ -196,6 +202,7 @@ export const login =async(req,res)=>{
   return res.status(200).json({
     success: true,
     token,
+    email: user.email,
     role: user.role,
     fullName,
     enrollmentId,

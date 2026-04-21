@@ -113,6 +113,9 @@ import {
   Legend
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
+import Attendence from "./tabs/Attendence";
+import Marks from "./tabs/Marks";
+import Profile from "./tabs/Profile";
 
 // Register chart components
 ChartJS.register(
@@ -192,10 +195,10 @@ const Graph = ({ subjects }) => {
   };
 
   return (
-    <div className="mt-10 flex flex-col items-center">
+    <div className="mt-5 ml-5 flex flex-col">
 
       {/* Tabs */}
-      <div className="flex bg-gray-200 rounded-full p-1 mb-6">
+      <div className="flex bg-gray-200 rounded-full p-1 mb-6 w-fit">
 
         {tabs.map((tab) => (
           <button
@@ -216,18 +219,22 @@ const Graph = ({ subjects }) => {
 
       {/* Graph Container */}
 
-      <div className="bg-white p-6 rounded-xl shadow w-[700px]">
+      <div className="w-full max-w-5xl">
 
         {active === "Attendance" && (
-          <Bar data={attendanceData} options={options} />
+          <div className="bg-white p-6 rounded-xl shadow">
+            <Bar data={attendanceData} options={options} />
+          </div>
         )}
 
         {active === "Marks" && (
-          <Bar data={marksData} options={options} />
+          <div className="bg-white p-6 rounded-xl shadow">
+            <Bar data={marksData} options={options} />
+          </div>
         )}
 
         {active === "Profile" && (
-          <Bar data={marksData} options={options} />
+          <Profile subjects={subjects} />
         )}
 
       </div>

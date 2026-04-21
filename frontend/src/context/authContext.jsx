@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }) => {
   const loginAction = (data) => {
     const userData = {
       token: data.token,
+      email: data.email,
       role: data.role,
       fullName: data.fullName,
       enrollmentId: data.enrollmentId || null,
