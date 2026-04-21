@@ -108,7 +108,7 @@ const UploadMarks = () => {
   }
 
   return (
-    <div className="bg-gray-50 p-6 w-screen">
+    <div className="bg-gray-50 p-6 w-full">
       <div className="bg-white p-6 rounded-2xl shadow-sm">
         <h2 className="text-lg font-semibold mb-6">Upload Marks</h2>
 

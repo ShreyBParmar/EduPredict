@@ -36,8 +36,8 @@ const FacultyHeader = () => {
         <div className="flex items-center gap-4">
           
           {/* Profile Icon */}
-          <div className="w-15 h-15 flex items-center justify-center rounded-full bg-blue-600 text-white font-semibold text-lg">
-           <img src={faculty_logo}/>
+          <div className="w-16 h-16 flex items-center justify-center rounded-full bg-blue-600 text-white font-semibold text-lg overflow-hidden">
+           <img src={faculty_logo} className="w-full h-full object-contain p-1"/>
           </div>
       
           {/* Name + Info */}

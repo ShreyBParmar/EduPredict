@@ -80,7 +80,7 @@ const MarkAttendence = () => {
   }
 
   return (
-    <div className="bg-gray-50 p-6 w-screen">
+    <div className="bg-gray-50 p-6 w-full">
       <div className="bg-white p-6 rounded-2xl shadow-sm">
         <h2 className="text-lg font-semibold">Mark Student Attendance</h2>
         <p className="text-gray-500 text-sm mb-4">
