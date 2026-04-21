@@ -9,15 +9,16 @@ export const getStudentDashboard = async (req, res) => {
     const student = await Student.findById(studentId);
 
     const subjects = await StudentSubject.find({ student: studentId })
-      .populate("subject", "subjectName", "subjectCode");
+      .populate("subject", "subjectName");
 
     res.json({
+      success: true,
       studentName: student.fullName,
       semester: student.semester,
       subjects
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
