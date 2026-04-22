@@ -50,3 +50,56 @@ export const getStudentDashboard = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const getRiskStudents = async (req, res) => {
+  try {
+    const { subjectId } = req.query;
+
+    if (!subjectId) {
+      return res.status(400).json({
+        success: false,
+        message: "Subject ID required",
+      });
+    }
+
+    const records = await StudentSubject.find({ subject: subjectId })
+      .populate("student", "fullName enrollmentId");
+
+    const students = records.map((r) => {
+      const internal = r.internalMarks || 0;
+      const external = r.externalMarks || 0;
+      const assignment = r.assignment || 0;
+
+      const totalMarks = internal + external + assignment;
+
+      let riskLevel = "Low";
+
+      if (totalMarks < 40) {
+        riskLevel = "High";
+      } else if (totalMarks <= 70) {
+        riskLevel = "Medium";
+      } else if(totalMarks >70){
+        riskLevel = "Low";
+      }
+
+      return {
+        student: r.student,
+        attendance: r.attendance || 0,
+        totalMarks,
+        riskLevel,
+      };
+    });
+
+    res.json({
+      success: true,
+      students,
+    });
+
+  } catch (error) {
+    console.error("❌ Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};

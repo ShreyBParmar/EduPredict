@@ -55,7 +55,10 @@ const studentSubjectSchema = new mongoose.Schema({
     type: String,
     enum: ["Safe", "Warning", "Risk"],
     default: "Safe"
-  }
+  },
+  classesHeld: { type: Number, default: 0 },
+classesAttended: { type: Number, default: 0 },
+attendance: { type: Number, default: 0 }
 
 }, { timestamps: true });
 

@@ -21,26 +21,46 @@ export const getStudentsBySemester = async (req, res) => {
 export const markAttendance = async (req, res) => {
   try {
     const { subjectId, semester, attendanceData } = req.body;
-    // attendanceData = { studentId: attendanceValue } e.g., { "123": true, "456": false }
 
     for (const [studentId, isPresent] of Object.entries(attendanceData)) {
-      await StudentSubject.findOneAndUpdate(
-        { 
-          student: studentId, 
-          subject: subjectId, 
-          semester: semester 
-        },
-        { 
-          attendance: isPresent ? 1 : 0 
-        },
-        { new: true }
-      );
+
+      let record = await StudentSubject.findOne({
+        student: studentId,
+        subject: subjectId,
+        semester: semester
+      });
+
+      // If not exist, create new
+      if (!record) {
+        record = new StudentSubject({
+          student: studentId,
+          subject: subjectId,
+          semester: semester,
+          classesHeld: 0,
+          classesAttended: 0
+        });
+      }
+
+      // 🔥 Increment total classes
+      record.classesHeld += 1;
+
+      // 🔥 Increment attended if present
+      if (isPresent) {
+        record.classesAttended += 1;
+      }
+
+      // 🔥 Calculate percentage
+      record.attendance =
+        (record.classesAttended / record.classesHeld) * 100;
+
+      await record.save();
     }
 
     res.status(200).json({
       success: true,
-      message: "Attendance marked successfully"
+      message: "Attendance updated correctly"
     });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
