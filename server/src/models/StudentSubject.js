@@ -36,7 +36,7 @@ const studentSubjectSchema = new mongoose.Schema({
     default: 0
   },
   
-  assignment:{
+  Practical:{
     type: Number,
     default: 0
   },

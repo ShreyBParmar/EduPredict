@@ -32,7 +32,7 @@ export const getStudentDashboard = async (req, res) => {
       attendance: s.attendance || 0,
       internalMarks: s.internalMarks || 0,
       externalMarks: s.externalMarks || 0,
-      assignment: s.assignment || 0,
+      Practical: s.Practical || 0,
       totalMarks: s.totalMarks || 0,
       grade: s.grade || "N/A",
       status: s.status || "Safe"
@@ -68,9 +68,9 @@ export const getRiskStudents = async (req, res) => {
     const students = records.map((r) => {
       const internal = r.internalMarks || 0;
       const external = r.externalMarks || 0;
-      const assignment = r.assignment || 0;
+      const Practical = r.Practical || 0;
 
-      const totalMarks = internal + external + assignment;
+      const totalMarks = internal + external + Practical;
 
       let riskLevel = "Low";
 

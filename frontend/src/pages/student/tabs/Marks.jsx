@@ -34,7 +34,7 @@ const Marks = ({ subjects }) => {
     subjectCode: subject.subject?.subjectCode || subject.subjectCode || "N/A",
     internalMarks: subject.internalMarks || 0,
     externalMarks: subject.externalMarks || 0,
-    assignment: subject.assignment || 0,
+    Practical: subject.Practical || 0,
     totalMarks: subject.totalMarks || 0,
     grade: subject.grade || "-"
   }));
@@ -100,7 +100,7 @@ const Marks = ({ subjects }) => {
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Subject</th>
                 <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Internal</th>
                 <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">External</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Assignment</th>
+                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Practical</th>
                 <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Total</th>
                 <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Grade</th>
               </tr>
@@ -114,7 +114,7 @@ const Marks = ({ subjects }) => {
                   </td>
                   <td className="px-6 py-4 text-center text-sm text-gray-700">{item.internalMarks}/30</td>
                   <td className="px-6 py-4 text-center text-sm text-gray-700">{item.externalMarks}/70</td>
-                  <td className="px-6 py-4 text-center text-sm text-gray-700">{item.assignment}</td>
+                  <td className="px-6 py-4 text-center text-sm text-gray-700">{item.Practical}</td>
                   <td className="px-6 py-4 text-center text-sm font-semibold text-blue-600">{item.totalMarks}/100</td>
                   <td className="px-6 py-4 text-center">
                     <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">

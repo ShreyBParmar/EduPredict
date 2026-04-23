@@ -62,11 +62,11 @@ const Analytics = () => {
 
   // Prepare chart data - Overview
   const analyticsData = classStats ? {
-    labels: ["Avg Internal", "Avg External", "Avg Assignment"],
+    labels: ["Avg Internal", "Avg External", "Avg Practical"],
     datasets: [
       {
         label: "Average Marks",
-        data: [classStats.avgInternal, classStats.avgExternal, classStats.avgAssignment],
+        data: [classStats.avgInternal, classStats.avgExternal, classStats.avgPractical],
         backgroundColor: ["#3B82F6", "#10B981", "#F59E0B"]
       }
     ]
@@ -179,8 +179,8 @@ const Analytics = () => {
                 <p className="text-2xl font-bold text-green-600">{classStats.avgExternal}</p>
               </div>
               <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                <p className="text-sm text-gray-600">Avg Assignment</p>
-                <p className="text-2xl font-bold text-orange-600">{classStats.avgAssignment}</p>
+                <p className="text-sm text-gray-600">Avg Practical</p>
+                <p className="text-2xl font-bold text-orange-600">{classStats.avgPractical}</p>
               </div>
               <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
                 <p className="text-sm text-gray-600">Avg Total</p>
@@ -233,7 +233,7 @@ const Analytics = () => {
                       <th className="p-3 text-left">Student Name</th>
                       <th className="p-3 text-center">Internal</th>
                       <th className="p-3 text-center">External</th>
-                      <th className="p-3 text-center">Assignment</th>
+                      <th className="p-3 text-center">Practical</th>
                       <th className="p-3 text-center">Total</th>
                       <th className="p-3 text-center">Average</th>
                     </tr>
@@ -244,7 +244,7 @@ const Analytics = () => {
                         <td className="p-3">{student.studentName}</td>
                         <td className="p-3 text-center">{student.internalMarks}</td>
                         <td className="p-3 text-center">{student.externalMarks}</td>
-                        <td className="p-3 text-center">{student.assignment}</td>
+                        <td className="p-3 text-center">{student.Practical}</td>
                         <td className="p-3 text-center font-semibold">{student.totalMarks}</td>
                         <td className="p-3 text-center font-semibold text-blue-600">
                           {student.averageMarks.toFixed(2)}

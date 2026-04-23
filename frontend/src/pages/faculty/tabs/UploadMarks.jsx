@@ -14,7 +14,7 @@ const UploadMarks = () => {
   const examTypes = [
     { value: 'internal', label: 'Internal Marks (Max: 30)', max: 30 },
     { value: 'external', label: 'External Marks (Max: 70)', max: 70 },
-    { value: 'assignment', label: 'Assignment (Max: 30)', max: 30 }
+    { value: 'Practical', label: 'Practical (Max: 30)', max: 30 }
   ]
 
   // Initialize subjects from user profile

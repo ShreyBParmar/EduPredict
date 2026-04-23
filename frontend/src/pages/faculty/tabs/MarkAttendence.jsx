@@ -52,6 +52,18 @@ const MarkAttendence = () => {
     }
   }
 
+  const handleSelectAll = () => {
+  const newValue = !selectAll;
+  setSelectAll(newValue);
+
+  const updated = {};
+  students.forEach((student) => {
+    updated[student._id] = newValue;
+  });
+
+  setAttendance(updated);
+};
+
   const handleAttendanceToggle = (studentId) => {
     setAttendance(prev => ({
       ...prev,
@@ -113,7 +125,15 @@ const MarkAttendence = () => {
 
         {/* STUDENTS LIST */}
         <div>
-          <h2 className='text-base mt-10 font-semibold'>Students ({students.length}) <input type='checkbox' value='' className='ml-5.5'/> <label>Select all</label></h2>
+          <h2 className='text-base mt-10 font-semibold'>Students ({students.length}) 
+          <input
+            type="checkbox"
+            id='select all'
+            checked={selectAll}
+            onChange={handleSelectAll}
+            className="ml-5.5"
+          /> 
+          <label htmlFor='select all' className='ml-1.5'>Select all</label></h2>
           
           {loading ? (
             <p className="text-gray-500">Loading students...</p>

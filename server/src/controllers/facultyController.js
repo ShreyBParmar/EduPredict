@@ -66,18 +66,18 @@ export const markAttendance = async (req, res) => {
   }
 };
 
-// Update marks by exam type (internal, external, assignment)
+// Update marks by exam type (internal, external, Practical)
 export const updateMarks = async (req, res) => {
   try {
     const { subjectId, semester, examType, marksData } = req.body;
-    // examType: 'internal' | 'external' | 'assignment'
+    // examType: 'internal' | 'external' | 'Practical'
     // marksData = { studentId: marks } e.g., { "123": 25, "456": 20 }
 
     // Max marks validation
     const maxMarks = {
       internal: 30,
       external: 70,
-      assignment: 30
+      Practical: 30
     };
 
     const max = maxMarks[examType];
@@ -95,10 +95,10 @@ export const updateMarks = async (req, res) => {
         });
       }
 
-      // Update marks - assignment field name is different
+      // Update marks - Practical field name is different
       let fieldName;
-      if (examType === "assignment") {
-        fieldName = "assignment";
+      if (examType === "Practical") {
+        fieldName = "Practical";
       } else {
         fieldName = examType + "Marks";
       }
@@ -120,7 +120,7 @@ export const updateMarks = async (req, res) => {
         const totalMarks =
           (studentSubject.internalMarks || 0) +
           (studentSubject.externalMarks || 0) +
-          (studentSubject.assignment || 0);
+          (studentSubject.Practical || 0);
 
         await StudentSubject.findByIdAndUpdate(
           studentSubject._id,
@@ -173,9 +173,9 @@ export const getSubjectMarksData = async (req, res) => {
       enrollmentId: record.student?.enrollmentId || 'N/A',
       internalMarks: record.internalMarks || 0,
       externalMarks: record.externalMarks || 0,
-      assignment: record.assignment || 0,
+      Practical: record.Practical || 0,
       totalMarks: record.totalMarks || 0,
-      averageMarks: ((record.internalMarks || 0) + (record.externalMarks || 0) + (record.assignment || 0)) / 3,
+      averageMarks: ((record.internalMarks || 0) + (record.externalMarks || 0) + (record.Practical || 0)) / 3,
       attendance: record.attendance || 0
     }));
 
@@ -183,7 +183,7 @@ export const getSubjectMarksData = async (req, res) => {
     const totalStudents = studentMarks.length;
     const avgInternal = studentMarks.reduce((sum, s) => sum + s.internalMarks, 0) / totalStudents || 0;
     const avgExternal = studentMarks.reduce((sum, s) => sum + s.externalMarks, 0) / totalStudents || 0;
-    const avgAssignment = studentMarks.reduce((sum, s) => sum + s.assignment, 0) / totalStudents || 0;
+    const avgPractical = studentMarks.reduce((sum, s) => sum + s.Practical, 0) / totalStudents || 0;
     const avgTotal = studentMarks.reduce((sum, s) => sum + s.totalMarks, 0) / totalStudents || 0;
     const avgAttendance = studentMarks.reduce((sum, s) => sum + s.attendance, 0) / totalStudents || 0;
 
@@ -194,7 +194,7 @@ export const getSubjectMarksData = async (req, res) => {
         totalStudents,
         avgInternal: avgInternal.toFixed(2),
         avgExternal: avgExternal.toFixed(2),
-        avgAssignment: avgAssignment.toFixed(2),
+        avgPractical: avgPractical.toFixed(2),
         avgTotal: avgTotal.toFixed(2),
         avgAttendance: avgAttendance.toFixed(2)
       }
