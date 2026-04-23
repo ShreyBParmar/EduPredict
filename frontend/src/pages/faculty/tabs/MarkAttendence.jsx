@@ -21,6 +21,8 @@ const MarkAttendence = () => {
   const [students, setStudents] = useState([])
   const [attendance, setAttendance] = useState({}) // { studentId: true/false }
   const [loading, setLoading] = useState(false)
+  const [selectAll,setSelectAll] = useState(false)
+
   console.log(selectedDate);
   
 
@@ -111,7 +113,7 @@ const MarkAttendence = () => {
 
         {/* STUDENTS LIST */}
         <div>
-          <h2 className='text-base mt-10 font-semibold'>Students ({students.length})</h2>
+          <h2 className='text-base mt-10 font-semibold'>Students ({students.length}) <input type='checkbox' value='' className='ml-5.5'/> <label>Select all</label></h2>
           
           {loading ? (
             <p className="text-gray-500">Loading students...</p>

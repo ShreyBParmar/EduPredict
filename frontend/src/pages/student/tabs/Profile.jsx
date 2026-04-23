@@ -17,7 +17,7 @@ const Profile = ({ subjects }) => {
         </div>
 
         {/* Student Information */}
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           
           {/* Full Name */}
           <div className="bg-white p-4 rounded-lg shadow">
@@ -28,7 +28,7 @@ const Profile = ({ subjects }) => {
           {/* Email */}
           <div className="bg-white p-4 rounded-lg shadow">
             <p className="text-gray-500 text-sm font-semibold uppercase">Email</p>
-            <p className="text-gray-800 text-lg font-bold break-words">{user?.email || 'N/A'}</p>
+            <p className="text-gray-800 text-lg font-bold">{user?.email || 'N/A'}</p>
           </div>
 
           {/* Student ID */}

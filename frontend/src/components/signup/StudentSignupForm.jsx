@@ -71,7 +71,7 @@ const StudentSignupForm = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <img src="Student_signup" />
+    
       <form
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-lg shadow-xl/70 w-96 grid gap-3"
