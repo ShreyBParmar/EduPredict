@@ -52,13 +52,14 @@ const Login = () => {
       auth.loginAction({
         token: data.token,
         role: data.role,
+        email: data.email,
         fullName: data.fullName,
         enrollmentId: data.enrollmentId ?? null,
         facultyId: data.facultyId ?? null,
         semester:data.semester,
         subjects: data.subjects
       });
-
+      
       // also keep token separately if other code expects it
       localStorage.setItem("token", data.token);
       console.log("Login detail: ", data);

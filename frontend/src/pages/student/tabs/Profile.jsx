@@ -22,7 +22,7 @@ const Profile = ({ subjects }) => {
           {/* Full Name */}
           <div className="bg-white p-4 rounded-lg shadow">
             <p className="text-gray-500 text-sm font-semibold uppercase">Full Name</p>
-            <p className="text-gray-800 text-lg font-bold">{user?.fullName || 'N/A'}</p>
+            <p className="text-gray-800 text-lg font-bold">{user?.fullName || 'N/A'}</p>            
           </div>
 
           {/* Email */}
