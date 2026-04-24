@@ -27,11 +27,18 @@ const MarkAttendence = () => {
   
 
   // Fetch students on component mount or semester change
+ useEffect(() => {
+  if (user?.semester && selectedSubject) {
+    fetchStudents()
+  }
+}, [user?.semester, selectedSubject])
+
   useEffect(() => {
-    if (user?.semester) {
-      fetchStudents()
-    }
-  }, [user?.semester])
+  if (!selectedSubject) {
+    setStudents([]);
+    setAttendance({});
+  }
+}, [selectedSubject]);
 
   const fetchStudents = async () => {
     try {
@@ -77,6 +84,13 @@ const MarkAttendence = () => {
         alert("Please select a subject")
         return
       }
+
+       const hasAnySelected = Object.values(attendance).some(val => val === true);
+
+    if (!hasAnySelected) {
+      alert("Please select at least one student");
+      return;
+    }
 
       await markAttendance(selectedSubject._id, user.semester, attendance)
       alert("Attendance marked successfully for " + selectedDate)
@@ -124,6 +138,12 @@ const MarkAttendence = () => {
         </div>
 
         {/* STUDENTS LIST */}
+        {!selectedSubject ? (
+  <p className="text-gray-500 mt-6">
+    Please select a subject to mark attendance
+  </p>
+) : (
+  <div>
         <div>
           <h2 className='text-base mt-10 font-semibold'>Students ({students.length}) 
           <input
@@ -156,12 +176,19 @@ const MarkAttendence = () => {
               ))}
             </div>
           )}
+        
         </div>
-
+        </div> 
+)}
+        
         {/* SAVE BUTTON */}
         <button
           onClick={handleSaveAttendance}
-          disabled={!selectedSubject?._id || students.length === 0}
+          disabled={
+  !selectedSubject?._id ||
+  students.length === 0 ||
+  !Object.values(attendance).some(val => val === true)
+}
           className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
         >
           Save Attendance

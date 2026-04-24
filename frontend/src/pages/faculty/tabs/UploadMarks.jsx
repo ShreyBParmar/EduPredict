@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../context/authContext'
+import { useSubject } from '../../../context/subjectContext'
 import { getStudentsBySemester, updateMarks } from '../../../services/facultyApi'
 
 const UploadMarks = () => {
   const { user } = useAuth()
-  const [subjects, setSubjects] = useState([])
-  const [selectedSubject, setSelectedSubject] = useState(null)
+  const {selectedSubject} = useSubject();
+
+  
   const [examType, setExamType] = useState('internal')
   const [students, setStudents] = useState([])
   const [marks, setMarks] = useState({})
@@ -14,22 +16,27 @@ const UploadMarks = () => {
   const examTypes = [
     { value: 'internal', label: 'Internal Marks (Max: 30)', max: 30 },
     { value: 'external', label: 'External Marks (Max: 70)', max: 70 },
-    { value: 'Practical', label: 'Practical (Max: 30)', max: 30 }
+    { value: 'Practical', label: 'Practical Marks (Max: 30)', max: 30 }
   ]
 
   // Initialize subjects from user profile
-  useEffect(() => {
-    if (user?.subjects) {
-      setSubjects(user.subjects)
-    }
-  }, [user])
-
   // Fetch students when subject changes
   useEffect(() => {
     if (selectedSubject) {
       fetchStudents()
     }
   }, [selectedSubject])
+
+  useEffect(() => {
+  if (students.length === 0) return;
+
+  const resetMarks = {};
+  students.forEach((student) => {
+    resetMarks[student._id] = "";
+  });
+
+  setMarks(resetMarks);
+}, [examType]);
 
   const fetchStudents = async () => {
     try {
@@ -101,11 +108,13 @@ const UploadMarks = () => {
         initialMarks[student._id] = ''
       })
       setMarks(initialMarks)
+      
     } catch (error) {
       console.error('Error submitting marks:', error)
       alert('Failed to submit marks')
     }
   }
+  const hasMarksEntered = Object.values(marks).some(val => val !== "");
 
   return (
     <div className="bg-gray-50 p-6 w-full">
@@ -116,25 +125,14 @@ const UploadMarks = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Subject Dropdown */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Subject
-            </label>
-            <select
-              value={selectedSubject?._id || ''}
-              onChange={(e) => {
-                const subject = subjects.find(s => s._id === e.target.value)
-                setSelectedSubject(subject)
-              }}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">-- Select Subject --</option>
-              {subjects.map(subject => (
-                <option key={subject._id} value={subject._id}>
-                  {subject.subjectName}
-                </option>
-              ))}
-            </select>
-          </div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Subject
+  </label>
+
+  <div className="w-full p-3 rounded-lg bg-gray-100">
+    {selectedSubject?.subjectName || "No subject selected"}
+  </div>
+</div>
 
           {/* Exam Type Dropdown */}
           <div>
@@ -165,7 +163,7 @@ const UploadMarks = () => {
             ) : (
               <>
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
+                  <table className="w-full border-collapse table-fixed">
                     <thead>
                       <tr className="bg-gray-100 border">
                         <th className="p-3 text-left">Student Name</th>
@@ -199,7 +197,8 @@ const UploadMarks = () => {
 
                 <button
                   onClick={handleSubmit}
-                  className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                  disabled={!selectedSubject?._id || !hasMarksEntered}
+                  className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:bg-gray-400"
                 >
                   Submit Marks
                 </button>
