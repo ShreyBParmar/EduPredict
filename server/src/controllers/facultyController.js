@@ -1,6 +1,26 @@
 import Faculty from "../models/Faculty.js";
 import StudentSubject from "../models/StudentSubject.js";
 import Student from "../models/Student.js";
+
+// GET subjects for faculty + semester
+export const getFacultySubjects= async (req, res) => {
+  try {
+    const { facultyId, semester } = req.query;
+
+    const data = await FacultySubject.find({
+      faculty: facultyId,
+      semester
+    }).populate("subject","subjectName");
+
+    const subjects = data.map(item => item.subject);
+
+    res.json(subjects);
+
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching subjects" });
+  }
+};
+
 // Get all students in the faculty's semester
 export const getStudentsBySemester = async (req, res) => {
   try {

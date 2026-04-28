@@ -11,15 +11,7 @@ const facultySchema=new mongoose.Schema(
             type: String,
             required: true,
             unique:true
-        },
-        semester:{
-            type: Number,
-            required: true
-        },
-        subjects:[{
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: "MasterSubject",
-        }]
+        }
     },
     {
         timestamps:true

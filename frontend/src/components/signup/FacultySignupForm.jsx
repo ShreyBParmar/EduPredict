@@ -1,8 +1,12 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { Eye, EyeOff, GraduationCap } from "lucide-react";
 
+
+
 const FacultySignupForm = () => {
+  const semesters = [1, 2, 3, 4, 5, 6, 7];
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -10,82 +14,96 @@ const FacultySignupForm = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    facultyId: "",
+    facultyId: ""
   });
 
-  const [semester, setSemester] = useState("");
-  const [subjects, setSubjects] = useState([]);
-  const [selectedSubjects, setSelectedSubjects] = useState([]);
-
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const semesters = [1, 2, 3, 4, 5, 6, 7];
+  const [teachingData, setTeachingData] = useState([]);
 
-  // 🔄 Handle input change
+  // 🔹 Input change
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 🔄 Handle subject selection
-  const handleSubjectSelect = (id) => {
-    if (selectedSubjects.includes(id)) {
-      setSelectedSubjects(selectedSubjects.filter((s) => s !== id));
-    } else {
-      setSelectedSubjects([...selectedSubjects, id]);
+  // 🔹 Add semester block
+  const addSemester = () => {
+    setTeachingData([
+      ...teachingData,
+      { semester: "", subjects: [], availableSubjects: [] }
+    ]);
+  };
+
+  // 🔹 Remove semester block
+  const removeSemester = (index) => {
+    const updated = teachingData.filter((_, i) => i !== index);
+    setTeachingData(updated);
+  };
+
+  // 🔹 Handle semester change + fetch subjects
+  const handleSemesterChange = async (index, sem) => {
+    const updated = [...teachingData];
+    updated[index].semester = sem;
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/subjects/?sem=${sem}`
+      );
+
+       if (!res.ok) {
+      throw new Error(`Server error: ${res.status}`);
+    }
+      const data = await res.json();
+
+      updated[index].availableSubjects = data;
+      updated[index].subjects = [];
+
+      setTeachingData(updated);
+    } catch (err) {
+      console.error("FETCH ERROR:", err.message);
     }
   };
 
-  // 🔥 Fetch subjects when semester changes
-  useEffect(() => {
-    if (!semester) return;
+  // 🔹 Handle subject select
+  const handleSubjectSelect = (index, subId) => {
+    const updated = [...teachingData];
+    const subjects = updated[index].subjects;
 
-    const fetchSubjects = async () => {
-      try {
-        const res = await fetch(
-          `http://localhost:5000/api/subjects/?sem=${semester}`
-        );
+    if (subjects.includes(subId)) {
+      updated[index].subjects = subjects.filter((id) => id !== subId);
+    } else {
+      updated[index].subjects.push(subId);
+    }
 
-        if (!res.ok) throw new Error("Failed to fetch subjects");
+    setTeachingData(updated);
+  };
 
-        const data = await res.json();
-        setSubjects(data);
-        setSelectedSubjects([]); // reset on change
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchSubjects();
-  }, [semester]);
-
-  // 🚀 Submit form
+  // 🔹 Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // validation
-    if (!semester) {
-      alert("Please select semester");
-      return;
-    }
-
+    // validations
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match");
       return;
     }
 
-    if (formData.password.length <= 6) {
-      alert("Password should be more than 6 characters");
+    if (teachingData.length === 0) {
+      alert("Add at least one semester");
       return;
+    }
+
+    for (const item of teachingData) {
+      if (!item.semester || item.subjects.length === 0) {
+        alert("Each semester must have subjects");
+        return;
+      }
     }
 
     const payload = {
       ...formData,
-      semester,
-      subjects: selectedSubjects,
+      teachingData
     };
 
     try {
@@ -93,9 +111,7 @@ const FacultySignupForm = () => {
         "http://localhost:5000/api/auth/register_faculty",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         }
       );
@@ -103,14 +119,13 @@ const FacultySignupForm = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Registration failed");
+        alert(data.message);
         return;
       }
 
-      alert("Registration successful");
-
-      // 🔥 go to login (login will store semester in context)
+      alert("Faculty Registered Successfully");
       navigate("/login");
+
     } catch (err) {
       console.error(err);
       alert("Signup failed");
@@ -118,68 +133,63 @@ const FacultySignupForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex justify-center items-center bg-gray-100 p-6">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-lg shadow-xl w-96 grid gap-3"
+        className="bg-white p-6 rounded-xl shadow w-full max-w-xl space-y-4"
       >
-        {/* Header */}
-        <div className="relative flex items-center justify-center">
-          <div className="bg-blue-600 w-10 h-10 rounded-2xl absolute left-0 flex items-center justify-center">
-            <GraduationCap className="w-6 h-6 text-white" />
-          </div>
-          <h2 className="text-xl font-semibold">Faculty Signup</h2>
-        </div>
+        <h2 className="text-xl font-semibold text-center">
+          Faculty Signup
+        </h2>
 
-        {/* Inputs */}
+        {/* Basic Info */}
         <input
-          type="text"
           name="fullName"
+          type="text"
           placeholder="Full Name"
-          className="border p-2 rounded"
+          className="border p-2 rounded w-full"
           onChange={handleChange}
           required
         />
 
         <input
-          type="email"
           name="email"
+          type="email"
           placeholder="Email"
-          className="border p-2 rounded"
+          className="border p-2 rounded w-full"
           onChange={handleChange}
           required
         />
 
-        {/* Password */}
         <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            name="password"
-            placeholder="Password"
-            className="border p-2 rounded w-full pr-10"
-            onChange={handleChange}
-            required
-          />
-          <button
+        <input
+          type={showPassword ? "text" : "password"}
+          name="password"
+          placeholder="Password"
+          className="border p-2 rounded w-full"
+          onChange={handleChange}
+          required
+        />
+
+        <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2"
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </button>
+        </button>
         </div>
 
-        {/* Confirm Password */}
         <div className="relative">
-          <input
-            type={showConfirmPassword ? "text" : "password"}
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            className="border p-2 rounded w-full pr-10"
-            onChange={handleChange}
-            required
-          />
-          <button
+        <input
+          type={showConfirmPassword ? "text" : "password"}
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          className="border p-2 rounded w-full"
+          onChange={handleChange}
+          required
+        />
+         <button
             type="button"
             onClick={() =>
               setShowConfirmPassword(!showConfirmPassword)
@@ -194,48 +204,73 @@ const FacultySignupForm = () => {
           type="text"
           name="facultyId"
           placeholder="Faculty ID"
-          className="border p-2 rounded"
+          className="border p-2 rounded w-full"
           onChange={handleChange}
           required
         />
 
-        {/* Semester */}
-        <select
-          value={semester}
-          onChange={(e) => setSemester(e.target.value)}
-          className="border p-2 rounded"
-          required
+        {/* Add Semester */}
+        <button
+          type="button"
+          onClick={addSemester}
+          className="bg-blue-500 text-white px-3 py-2 rounded"
         >
-          <option value="">Select Semester</option>
-          {semesters.map((sem) => (
-            <option key={sem} value={sem}>
-              Sem {sem}
-            </option>
-          ))}
-        </select>
+          + Add Semester
+        </button>
 
-        {/* Subjects */}
-        {subjects.length > 0 && (
-          <div className="mt-3 border p-2 rounded max-h-40 overflow-y-auto">
-            <p className="text-sm font-semibold mb-2">
-              Select Subjects:
-            </p>
+        {/* Dynamic Blocks */}
+        {teachingData.map((item, index) => (
+          <div key={index} className="border p-3 rounded mt-3">
 
-            {subjects.map((sub) => (
-              <label key={sub._id} className="block text-sm">
-                <input
-                  type="checkbox"
-                  checked={selectedSubjects.includes(sub._id)}
-                  onChange={() => handleSubjectSelect(sub._id)}
-                  className="mr-2"
-                />
-                {sub.subjectName}
-              </label>
-            ))}
+            <div className="flex justify-between items-center mb-2">
+              <p className="font-semibold">Semester Block</p>
+              <button
+                type="button"
+                onClick={() => removeSemester(index)}
+                className="text-red-500 text-sm"
+              >
+                Remove
+              </button>
+            </div>
+
+            {/* Semester */}
+            <select
+              value={item.semester}
+              onChange={(e) =>
+                handleSemesterChange(index, e.target.value)
+              }
+              className="border p-2 rounded w-full mb-2"
+            >
+              <option value="">Select Semester</option>
+              {semesters.map((sem) => (
+                <option key={sem} value={sem}>
+                  Sem {sem}
+                </option>
+              ))}
+            </select>
+
+            {/* Subjects */}
+            <div className="max-h-32 overflow-y-auto">
+              {item.availableSubjects?.map((sub) => (
+                <label key={sub._id} className="block text-sm">
+                  <input
+                    type="checkbox"
+                    checked={item.subjects.includes(sub._id)}
+                    onChange={() =>
+                      handleSubjectSelect(index, sub._id)
+                    }
+                    className="mr-2"
+                  />
+                  {sub.subjectName}
+                </label>
+              ))}
+            </div>
+
           </div>
-        )}
+        ))}
 
-        <button className="mt-2 bg-blue-700 text-white py-2 rounded hover:bg-blue-500">
+        {/* Submit */}
+        <button className="w-full bg-green-600 text-white py-2 rounded">
           Register
         </button>
 

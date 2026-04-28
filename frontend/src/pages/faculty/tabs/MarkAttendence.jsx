@@ -111,8 +111,14 @@ const MarkAttendence = () => {
     <div className="bg-gray-50 p-6 w-full">
       <div className="bg-white p-6 rounded-2xl shadow-sm">
         <h2 className="text-lg font-semibold">Mark Student Attendance</h2>
-        <p className="text-gray-500 text-sm mb-4">
-          Semester: {user?.semester}
+        <p>
+          <h2 className="text-base font-semibold">
+            Semester {selectedSubject?.semester}
+          </h2>
+
+          <h3 className="text-sm text-gray-500">
+            Subject: {selectedSubject?.subjectName}
+          </h3>
         </p>
 
         {/* SIDE BY SIDE */}

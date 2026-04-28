@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import MasterSubject from "../models/MasterSubject.js";
 import StudentSubject from "../models/StudentSubject.js";
 import Subject from "../models/Subject.js";
+import FacultySubject from "../models/FacultySubjects.js"
 
 //Registration of student
 export const registerStudent = async (req, res) => {
@@ -86,10 +87,10 @@ export const registerStudent = async (req, res) => {
 //Registration of faculty
 export const registerFaculty = async (req, res) => {
    try {
-    const { fullName, email, password, facultyId, semester, subjects } = req.body;
+    const { fullName, email, password, facultyId, teachingData } = req.body;
 
     // basic validation
-    if (!fullName || !email || !password || !semester || !subjects || !facultyId) {
+    if (!fullName || !email || !password || !teachingData ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -110,16 +111,30 @@ export const registerFaculty = async (req, res) => {
       });
     }
 
+    if (!teachingData || teachingData.length === 0) {
+      return res.status(400).json({
+        message: "Teaching data is required"
+      });
+    }
+
     //  hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
      //  create student profile
     const faculty = await Faculty.create({
       fullName,
-      facultyId,
-      semester,
-      subjects
+      facultyId
     });
+
+    for (const item of teachingData) {
+      for (const subId of item.subjects) {
+        await FacultySubject.create({
+          faculty: faculty._id,
+          subject: subId,
+          semester: item.semester
+        });
+      }
+    }
 
     // create auth user
     await User.create({
@@ -189,13 +204,23 @@ export const login =async(req,res)=>{
     subjects = student ? student.subjects : [];
 
   } else if (user.role === "faculty") {
-    const faculty = await Faculty.findById(user.refId).populate("subjects","subjectName")
+    const faculty = await Faculty.findById(user.refId)
     
 
     fullName = faculty ? faculty.fullName : "";
     facultyId = faculty ? faculty.facultyId : null;
-    semester = faculty ? faculty.semester : null;
-    subjects = faculty?.subjects || [];
+
+    const facultySubjects = await FacultySubject.find({
+    faculty: user.refId
+  }).populate("subject", "subjectName");
+
+  subjects = facultySubjects.map(fs => ({
+  subjectName: fs.subject.subjectName,
+  semester: fs.semester
+}));
+
+  // optional: collect semesters
+  semester = [...new Set(facultySubjects.map(fs => fs.semester))];
   }
 
   // send role, name and role-specific id to frontend
