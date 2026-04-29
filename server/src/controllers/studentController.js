@@ -1,5 +1,6 @@
 import StudentSubject from "../models/StudentSubject.js";
 import Student from "../models/Student.js";
+import { getRiskLevel, countByRiskLevel } from "../utils/riskAnalysis.js";
 
 export const getStudentDashboard = async (req, res) => {
   try {
@@ -53,8 +54,11 @@ export const getStudentDashboard = async (req, res) => {
 
 export const getRiskStudents = async (req, res) => {
   try {
-    const { subjectId } = req.query;
+    const { subjectId, semester } = req.query;
 
+    console.log("🔍 getRiskStudents called - subjectId:", subjectId, "semester:", semester);
+
+    // ❌ DO NOT use records before declaration (you had this bug)
     if (!subjectId) {
       return res.status(400).json({
         success: false,
@@ -62,44 +66,110 @@ export const getRiskStudents = async (req, res) => {
       });
     }
 
-    const records = await StudentSubject.find({ subject: subjectId })
-      .populate("student", "fullName enrollmentId");
+    // 🔥 Build query
+    let query = { subject: subjectId };
 
-    const students = records.map((r) => {
-      const internal = r.internalMarks || 0;
-      const external = r.externalMarks || 0;
-      const Practical = r.Practical || 0;
+    if (semester && !isNaN(semester)) {
+      query.semester = parseInt(semester);
+    }
 
-      const totalMarks = internal + external + Practical;
+    // 🔥 Fetch records
+    const records = await StudentSubject.find(query)
+      .populate("student", "fullName enrollmentId semester");
 
-      let riskLevel = "Low";
+    console.log("📊 Found StudentSubject records:", records.length);
 
-      if (totalMarks < 40) {
-        riskLevel = "High";
-      } else if (totalMarks <= 70) {
-        riskLevel = "Medium";
-      } else if(totalMarks >70){
-        riskLevel = "Low";
-      }
+    if (records.length > 0) {
+      console.log("🔎 First record:", records[0]);
+      console.log("👤 First student:", records[0].student);
+    }
 
-      return {
-        student: r.student,
-        attendance: r.attendance || 0,
-        totalMarks,
-        riskLevel,
+    // 🔥 If no data
+    if (records.length === 0) {
+      return res.json({
+        success: true,
+        students: [],
+        summary: {
+          High: 0,
+          Medium: 0,
+          Low: 0,
+          total: 0
+        }
+      });
+    }
+
+    // 🔥 Map students safely
+    const students = records
+      .map((r, index) => {
+        if (!r.student) {
+          console.warn(`⚠️ Missing student at index ${index}`);
+          return null;
+        }
+
+        const internal = r.internalMarks || 0;
+        const external = r.externalMarks || 0;
+        const practical = r.Practical || 0;
+
+        const totalMarks = internal + external + practical;
+        const attendance = Math.round(r.attendance || 0);
+
+        const riskLevel = getRiskLevel(attendance, totalMarks);
+
+        return {
+          _id: r._id,
+          studentId: r.student._id,
+          name: r.student.fullName,
+          enrollmentId: r.student.enrollmentId || "N/A",
+          attendance,
+          internalMarks: internal,
+          externalMarks: external,
+          Practical: practical,
+          totalMarks,
+          riskLevel,
+        };
+      })
+      .filter(Boolean);
+
+    // 🔥 SORT (IMPORTANT FIX: correct labels)
+    const sortedStudents = students.sort((a, b) => {
+      const order = {
+        "High Risk": 1,
+        "Medium Risk": 2,
+        "Low Risk": 3
       };
+      return order[a.riskLevel] - order[b.riskLevel];
     });
 
-    res.json({
+    // 🔥 SUMMARY
+    const summary = {
+      High: sortedStudents.filter(s => s.riskLevel === "High Risk").length,
+      Medium: sortedStudents.filter(s => s.riskLevel === "Medium Risk").length,
+      Low: sortedStudents.filter(s => s.riskLevel === "Low Risk").length,
+      total: sortedStudents.length
+    };
+
+    console.log(
+      "✅ Risk students processed - High:",
+      summary.High,
+      "Medium:",
+      summary.Medium,
+      "Low:",
+      summary.Low
+    );
+
+    // 🔥 RESPONSE
+    return res.json({
       success: true,
-      students,
+      students: sortedStudents,
+      summary
     });
 
   } catch (error) {
-    console.error("❌ Error:", error);
-    res.status(500).json({
+    console.error("❌ Error in getRiskStudents:", error);
+    return res.status(500).json({
       success: false,
       message: "Server error",
+      error: error.message
     });
   }
 };

@@ -215,6 +215,7 @@ export const login =async(req,res)=>{
   }).populate("subject", "subjectName");
 
   subjects = facultySubjects.map(fs => ({
+  _id: fs.subject._id,
   subjectName: fs.subject.subjectName,
   semester: fs.semester
 }));
@@ -236,7 +237,6 @@ export const login =async(req,res)=>{
     subjects
   });
   }
-  
   catch(error){
     res.status(500).json({message: error.message});
   }

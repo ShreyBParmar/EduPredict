@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
       enrollmentId: data.enrollmentId || null,
       facultyId: data.facultyId || null,
       semester: data.semester || "", // 🔥 IMPORTANT (store here)
-      subjects: data.subjects || ""
+      subjects: data.subjects || []
     };
 
     setUser(userData);

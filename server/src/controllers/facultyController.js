@@ -42,6 +42,9 @@ export const markAttendance = async (req, res) => {
   try {
     const { subjectId, semester, attendanceData } = req.body;
 
+    console.log(`📋 markAttendance called - subjectId: ${subjectId}, semester: ${semester}`);
+    console.log(`   Students to mark: ${Object.keys(attendanceData).length}`);
+
     for (const [studentId, isPresent] of Object.entries(attendanceData)) {
 
       let record = await StudentSubject.findOne({
@@ -52,6 +55,7 @@ export const markAttendance = async (req, res) => {
 
       // If not exist, create new
       if (!record) {
+        console.log(`   Creating new record for student ${studentId}`);
         record = new StudentSubject({
           student: studentId,
           subject: subjectId,
@@ -74,6 +78,7 @@ export const markAttendance = async (req, res) => {
         (record.classesAttended / record.classesHeld) * 100;
 
       await record.save();
+      console.log(`   ✅ Updated student ${studentId}: Attendance = ${record.attendance}%`);
     }
 
     res.status(200).json({
@@ -90,6 +95,10 @@ export const markAttendance = async (req, res) => {
 export const updateMarks = async (req, res) => {
   try {
     const { subjectId, semester, examType, marksData } = req.body;
+    
+    console.log(`📝 updateMarks called - examType: ${examType}, subjectId: ${subjectId}, semester: ${semester}`);
+    console.log(`   Students to update: ${Object.keys(marksData).length}`);
+    
     // examType: 'internal' | 'external' | 'Practical'
     // marksData = { studentId: marks } e.g., { "123": 25, "456": 20 }
 
@@ -125,6 +134,7 @@ export const updateMarks = async (req, res) => {
 
       const updateData = { [fieldName]: marks };
 
+      // Use upsert to create record if it doesn't exist
       const studentSubject = await StudentSubject.findOneAndUpdate(
         {
           student: studentId,
@@ -132,8 +142,10 @@ export const updateMarks = async (req, res) => {
           semester: semester
         },
         updateData,
-        { new: true }
+        { new: true, upsert: true }  // ✅ upsert: true creates record if not found
       );
+
+      console.log(`   ✅ Updated student ${studentId}: ${fieldName} = ${marks}`);
 
       // Calculate total marks
       if (studentSubject) {

@@ -42,9 +42,16 @@ const SubjectSelector = () => {
     value={selectedSubject?._id || ""}
     onChange={(e) => {
       const selected = filteredSubjects.find(
-        (sub) => sub._id === e.target.value
-      );
-      setSelectedSubject(selected);
+  (sub) => String(sub._id) === String(e.target.value)
+);
+
+console.log("✅ Selected Subject:", selected); // ADD THIS
+
+setSelectedSubject({
+  _id: selected._id,
+  subjectName: selected.subjectName,
+  semester: selected.semester
+});
     }}
     disabled={!filteredSubjects.length}
     className="w-full md:w-1/2 p-3 rounded-lg border"
