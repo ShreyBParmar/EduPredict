@@ -1,9 +1,16 @@
 
 import { useAuth } from '../../context/authContext';
+import { useNavigate } from 'react-router-dom';
 import Student_profile from '/src/assets/134954835116345278834481.svg'
 
 const Header = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div>
@@ -30,9 +37,12 @@ const Header = () => {
   </div>
 
   {/* Right Section: Logout */}
-  <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition hover:text-black">
-  Logout
-</button>
+  <button
+    onClick={handleLogout}
+    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition hover:text-white"
+  >
+    Logout
+  </button>
 
 </div>
     </div>

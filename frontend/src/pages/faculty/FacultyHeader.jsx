@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getFacultyProfile } from "../../services/facultyApi";
 import { useAuth } from "../../context/authContext";
+import { useNavigate } from "react-router-dom";
 import faculty_logo from "/src/assets/faculty_logo.png"
 const FacultyHeader = () => {
 {/*
@@ -26,6 +27,12 @@ const FacultyHeader = () => {
   */}
 //const { user } = useAuth();
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div>
@@ -53,9 +60,12 @@ const FacultyHeader = () => {
         </div>
       
         {/* Right Section: Logout */}
-        <button onClick={logout} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition hover:text-black">
-        Logout
-      </button>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition hover:text-white"
+        >
+          Logout
+        </button>
       
       </div>
 
