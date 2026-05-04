@@ -26,12 +26,12 @@ const MarkAttendence = () => {
   console.log(selectedDate);
   
 
-  // Fetch students on component mount or semester change
+  // Fetch students when subject changes
  useEffect(() => {
-  if (user?.semester && selectedSubject) {
+  if (selectedSubject?.semester && selectedSubject?._id) {
     fetchStudents()
   }
-}, [user?.semester, selectedSubject])
+}, [selectedSubject?.semester, selectedSubject?._id])
 
   useEffect(() => {
   if (!selectedSubject) {
@@ -43,7 +43,7 @@ const MarkAttendence = () => {
   const fetchStudents = async () => {
     try {
       setLoading(true)
-      const data = await getStudentsBySemester(user.semester)
+      const data = await getStudentsBySemester(selectedSubject.semester)
       setStudents(data.students)
       
       // Initialize attendance object
@@ -92,7 +92,7 @@ const MarkAttendence = () => {
       return;
     }
 
-      await markAttendance(selectedSubject._id, user.semester, attendance)
+      await markAttendance(selectedSubject._id, selectedSubject.semester, attendance)
       alert("Attendance marked successfully for " + selectedDate)
       
       // Reset

@@ -133,18 +133,18 @@ export const getRiskStudents = async (req, res) => {
     // 🔥 SORT (IMPORTANT FIX: correct labels)
     const sortedStudents = students.sort((a, b) => {
       const order = {
-        "High Risk": 1,
-        "Medium Risk": 2,
-        "Low Risk": 3
+        "High": 1,
+        "Medium": 2,
+        "Low": 3
       };
       return order[a.riskLevel] - order[b.riskLevel];
     });
 
     // 🔥 SUMMARY
     const summary = {
-      High: sortedStudents.filter(s => s.riskLevel === "High Risk").length,
-      Medium: sortedStudents.filter(s => s.riskLevel === "Medium Risk").length,
-      Low: sortedStudents.filter(s => s.riskLevel === "Low Risk").length,
+      High: sortedStudents.filter(s => s.riskLevel === "High").length,
+      Medium: sortedStudents.filter(s => s.riskLevel === "Medium").length,
+      Low: sortedStudents.filter(s => s.riskLevel === "Low").length,
       total: sortedStudents.length
     };
 

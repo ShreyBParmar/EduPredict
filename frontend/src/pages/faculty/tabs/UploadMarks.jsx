@@ -22,10 +22,10 @@ const UploadMarks = () => {
   // Initialize subjects from user profile
   // Fetch students when subject changes
   useEffect(() => {
-    if (selectedSubject) {
+    if (selectedSubject?.semester && selectedSubject?._id) {
       fetchStudents()
     }
-  }, [selectedSubject])
+  }, [selectedSubject?.semester, selectedSubject?._id])
 
   useEffect(() => {
   if (students.length === 0) return;
@@ -41,7 +41,7 @@ const UploadMarks = () => {
   const fetchStudents = async () => {
     try {
       setLoading(true)
-      const data = await getStudentsBySemester(user.semester)
+      const data = await getStudentsBySemester(selectedSubject.semester)
       setStudents(data.students)
       
       // Initialize marks
@@ -99,7 +99,7 @@ const UploadMarks = () => {
         return
       }
 
-      await updateMarks(selectedSubject._id, user.semester, examType, marksToSubmit)
+      await updateMarks(selectedSubject._id, selectedSubject.semester, examType, marksToSubmit)
       alert('Marks submitted successfully!')
       
       // Reset marks

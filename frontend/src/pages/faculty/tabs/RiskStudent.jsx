@@ -23,10 +23,10 @@ const RiskStudent = () => {
 
   // Fetch risk students
   useEffect(() => {
-    if (selectedSubject?._id) {
+    if (selectedSubject?._id && selectedSubject?.semester) {
       fetchRiskStudents();
     }
-  }, [selectedSubject]);
+  }, [selectedSubject?._id, selectedSubject?.semester]);
 
   // Apply filtering and sorting
   useEffect(() => {
@@ -34,7 +34,7 @@ const RiskStudent = () => {
 
     // Filter by risk level
     if (filterBy !== "all") {
-      filtered = filtered.filter(s => s.riskLevel === filterBy);
+      filtered = filtered.filter(s => s.riskLevel.includes(filterBy));
     }
 
     // Sort
@@ -48,7 +48,11 @@ const RiskStudent = () => {
           return b.totalMarks - a.totalMarks;
         case "risk":
         default:
-          const order = { High: 1, Medium: 2, Low: 3 };
+          const order = {
+  "High": 1,
+  "Medium": 2,
+  "Low": 3
+};
           return order[a.riskLevel] - order[b.riskLevel];
       }
     });
@@ -70,7 +74,12 @@ const RiskStudent = () => {
 
       if (res.data.success) {
         setStudents(res.data.students || []);
-        setSummary(res.data.summary || { High: 0, Medium: 0, Low: 0, total: 0 });
+        setSummary({
+  High: res.data.summary?.High || 0,
+  Medium: res.data.summary?.Medium || 0,
+  Low: res.data.summary?.Low || 0,
+  total: res.data.summary?.total || 0
+});
         console.log("✅ Students loaded:", res.data.students?.length);
       }
     } catch (err) {
@@ -83,20 +92,18 @@ const RiskStudent = () => {
 
   // Chart data
   const chartData = {
-    labels: ["High Risk", "Medium Risk", "Low Risk"],
-    datasets: [
-      {
-        data: [summary.High, summary.Medium, summary.Low],
-        backgroundColor: [
-          getChartColors.High,
-          getChartColors.Medium,
-          getChartColors.Low,
-        ],
-        borderColor: ["#fff", "#fff", "#fff"],
-        borderWidth: 2,
-      },
-    ],
-  };
+  labels: ["High Risk", "Medium Risk", "Low Risk"],
+  datasets: [
+    {
+      data: [
+        summary?.High || 0,
+        summary?.Medium || 0,
+        summary?.Low || 0
+      ],
+      backgroundColor: ["#EF4444", "#F59E0B", "#22C55E"]
+    }
+  ]
+};
 
   const chartOptions = {
     responsive: true,
@@ -164,15 +171,15 @@ const RiskStudent = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-red-500">
           <div className="text-sm text-gray-600">High Risk</div>
-          <div className="text-2xl font-bold text-red-600">{summary.High}</div>
+          <div className="text-2xl font-bold text-red-600">{summary.High || 0}</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-yellow-500">
           <div className="text-sm text-gray-600">Medium Risk</div>
-          <div className="text-2xl font-bold text-yellow-600">{summary.Medium}</div>
+          <div className="text-2xl font-bold text-yellow-600">{summary.Medium || 0}</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500">
           <div className="text-sm text-gray-600">Low Risk</div>
-          <div className="text-2xl font-bold text-green-600">{summary.Low}</div>
+          <div className="text-2xl font-bold text-green-600">{summary.Low || 0}</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
           <div className="text-sm text-gray-600">Total Students</div>
@@ -186,7 +193,7 @@ const RiskStudent = () => {
         <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Risk Distribution</h3>
           <div className="flex justify-center">
-            {summary.total === 0 ? (
+            {(summary?.High + summary?.Medium + summary?.Low) === 0 ? (
               <div className="text-gray-400 text-center py-12">
                 No data available
               </div>

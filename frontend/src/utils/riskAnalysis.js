@@ -19,15 +19,15 @@ export const getRiskLevel = (attendance, marks) => {
   const att = Math.max(0, Math.min(100, Number(attendance) || 0));
   const totalMarks = Math.max(0, Number(marks) || 0);
 
-  if (att < 60 || totalMarks < 35) {
+  if (totalMarks < 35) {
     return "High";
   }
 
-  if ((att >= 60 && att < 75) || (totalMarks >= 35 && totalMarks < 50)) {
+  if ((totalMarks >= 35 && totalMarks < 50)) {
     return "Medium";
   }
 
-  if (att >= 75 && totalMarks >= 50) {
+  if (totalMarks >= 50) {
     return "Low";
   }
 
