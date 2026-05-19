@@ -10,7 +10,11 @@ const Cards = ({ subjects = [] }) => {
         avgMarks: 0,
         grade: 'N/A',
         riskLevel: 'Low',
-        riskScore: 0
+        riskScore: 0,
+        predictedGrade: 'N/A',
+        subjectsStrong: 0,
+        subjectsWeek: 0,
+        improvementPotential: 0
       };
     }
 
@@ -32,6 +36,28 @@ const Cards = ({ subjects = [] }) => {
     else if (avgMarks >= 70) grade = 'B';
     else if (avgMarks >= 60) grade = 'C';
 
+    // Calculate predicted grade considering attendance
+    const projectedScore = (avgMarks * 0.7) + (avgAttendance * 0.3);
+    let predictedGrade = 'D';
+    if (projectedScore >= 90) predictedGrade = 'A+';
+    else if (projectedScore >= 80) predictedGrade = 'A';
+    else if (projectedScore >= 70) predictedGrade = 'B';
+    else if (projectedScore >= 60) predictedGrade = 'C';
+
+    // Count subjects performance
+    const subjectsStrong = subjects.filter(s => {
+      const marks = ((s.internalMarks || 0) + (s.externalMarks || 0) + (s.Practical || 0)) / 130 * 100;
+      return marks >= 70;
+    }).length;
+
+    const subjectsWeak = subjects.filter(s => {
+      const marks = ((s.internalMarks || 0) + (s.externalMarks || 0) + (s.Practical || 0)) / 130 * 100;
+      return marks < 60;
+    }).length;
+
+    // Calculate improvement potential (how much could improve with better attendance)
+    const improvementPotential = Math.max(0, 100 - projectedScore);
+
     // Calculate risk level using weighted score formula
     // Score = (TotalMarks * 0.7) + (Attendance * 0.3)
     const riskScore = (avgMarks * 0.7) + (avgAttendance * 0.3);
@@ -43,7 +69,17 @@ const Cards = ({ subjects = [] }) => {
       riskLevel = 'Medium';
     }
 
-    return { avgAttendance, avgMarks, grade, riskLevel, riskScore };
+    return { 
+      avgAttendance, 
+      avgMarks, 
+      grade, 
+      riskLevel, 
+      riskScore,
+      predictedGrade,
+      subjectsStrong,
+      subjectsWeak,
+      improvementPotential
+    };
   };
 
   const stats = calculateStats();
@@ -123,17 +159,38 @@ const Cards = ({ subjects = [] }) => {
             <span className="text-purple-500 text-2xl">📈</span>
           </div>
 
-          <div className="flex items-center justify-center">
-            <h2 className="text-5xl font-bold text-purple-700">
-              {stats.grade}
-            </h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-600 mb-1">Current</p>
+              <h2 className="text-4xl font-bold text-purple-700">
+                {stats.grade}
+              </h2>
+            </div>
+            <div className="text-2xl">→</div>
+            <div>
+              <p className="text-xs text-gray-600 mb-1">Projected</p>
+              <h2 className="text-4xl font-bold text-purple-600">
+                {stats.predictedGrade}
+              </h2>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg p-3 text-xs text-gray-700 space-y-1">
+            <div className="flex justify-between">
+              <span>Strong in:</span>
+              <span className="font-semibold text-green-600">{stats.subjectsStrong}/{subjects.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Needs work:</span>
+              <span className="font-semibold text-red-600">{stats.subjectsWeak}/{subjects.length}</span>
+            </div>
           </div>
 
           <p className="text-xs text-gray-600 text-center">
-            {stats.avgMarks >= 90 ? 'Excellent' : 
-             stats.avgMarks >= 80 ? 'Very Good' :
-             stats.avgMarks >= 70 ? 'Good' :
-             stats.avgMarks >= 60 ? 'Satisfactory' : 'Needs Improvement'}
+            {stats.avgMarks >= 90 ? '🌟 Excellent Performance' : 
+             stats.avgMarks >= 80 ? '✨ Very Good' :
+             stats.avgMarks >= 70 ? '👍 Good' :
+             stats.avgMarks >= 60 ? '⚡ Satisfactory' : '⚠️ Needs Improvement'}
           </p>
         </div>
 

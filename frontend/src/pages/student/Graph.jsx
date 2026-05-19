@@ -103,29 +103,9 @@ export default function Graph() {
 */}
 
 import React, { useState } from "react";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-} from "chart.js";
-import { Bar } from "react-chartjs-2";
 import Attendence from "./tabs/Attendence";
 import Marks from "./tabs/Marks";
 import Profile from "./tabs/Profile";
-
-// Register chart components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
 
 const Graph = ({ subjects }) => {
 
@@ -142,57 +122,6 @@ const Graph = ({ subjects }) => {
   const subjectNames = subjects.map(
     (s) => s.subject.subjectName
   );
-
-  // Attendance values
-  const attendanceValues = subjects.map(
-    (s) => s.attendance
-  );
-
-  // Total marks calculation
-  const marksValues = subjects.map(
-    (s) => s.internalMarks + s.externalMarks
-  );
-
-  // Attendance chart data
-  const attendanceData = {
-    labels: subjectNames,
-    datasets: [
-      {
-        label: "Attendance %",
-        data: attendanceValues,
-        backgroundColor: "#3B82F6"
-      }
-    ]
-  };
-
-  // Marks chart data
-  const marksData = {
-    labels: subjectNames,
-    datasets: [
-      {
-        label: "Total Marks (Out of 100)",
-        data: marksValues,
-        backgroundColor: "#10B981"
-      }
-    ]
-  };
-
-  // Chart options
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: "top"
-      },
-      title: {
-        display: true,
-        text:
-          active === "Attendance"
-            ? "Subject-wise Attendance"
-            : "Subject-wise Total Marks"
-      }
-    }
-  };
 
   return (
     <div className="mt-5 ml-5 flex flex-col">
@@ -222,15 +151,11 @@ const Graph = ({ subjects }) => {
       <div className="w-full max-w-5xl">
 
         {active === "Attendance" && (
-          <div className="bg-white p-6 rounded-xl shadow">
-            <Bar data={attendanceData} options={options} />
-          </div>
+          <Attendence subjects={subjects} />
         )}
 
         {active === "Marks" && (
-          <div className="bg-white p-6 rounded-xl shadow">
-            <Bar data={marksData} options={options} />
-          </div>
+          <Marks subjects={subjects} />
         )}
 
         {active === "Profile" && (

@@ -132,7 +132,7 @@ const Attendence = ({ subjects }) => {
                     <td className="px-6 py-4 text-sm font-medium text-gray-800">{item.subjectName}</td>
                     <td className="px-6 py-4 text-center text-sm font-medium text-gray-700">{item.classesAttended}</td>
                     <td className="px-6 py-4 text-center text-sm font-medium text-gray-700">{item.classesHeld}</td>
-                    <td className="px-6 py-4 text-center text-sm font-semibold text-blue-600">{item.attendance}%</td>
+                    <td className="px-6 py-4 text-center text-sm font-semibold text-blue-600">{parseFloat(item.attendance).toFixed(2)}%</td>
                     <td className="px-6 py-4 text-center">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBg} ${statusColor}`}>
                         {statusText}
@@ -162,11 +162,11 @@ const Attendence = ({ subjects }) => {
               </div>
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <p className="text-gray-600 text-sm font-medium mb-2">Highest</p>
-                <p className="text-3xl font-bold text-green-600">{highest}%</p>
+                <p className="text-3xl font-bold text-green-600">{parseFloat(highest).toFixed(2)}%</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <p className="text-gray-600 text-sm font-medium mb-2">Lowest</p>
-                <p className="text-3xl font-bold text-red-600">{lowest}%</p>
+                <p className="text-3xl font-bold text-red-600">{parseFloat(lowest).toFixed(2)}%</p>
               </div>
             </>
           );
