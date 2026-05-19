@@ -49,14 +49,6 @@ const Profile = ({ subjects }) => {
                 <p className="text-gray-500 text-sm font-semibold uppercase">Email</p>
                 <p className="text-gray-800 text-lg font-semibold break-all">{user?.email || 'N/A'}</p>
               </div>
-              <div className="border-l-4 border-blue-600 pl-4 py-2">
-                <p className="text-gray-500 text-sm font-semibold uppercase">Phone</p>
-                <p className="text-gray-800 text-lg font-semibold">{user?.phone || 'Not provided'}</p>
-              </div>
-              <div className="border-l-4 border-blue-600 pl-4 py-2">
-                <p className="text-gray-500 text-sm font-semibold uppercase">Date of Birth</p>
-                <p className="text-gray-800 text-lg font-semibold">{user?.dateOfBirth || 'Not provided'}</p>
-              </div>
             </div>
           </div>
 
@@ -91,33 +83,9 @@ const Profile = ({ subjects }) => {
           </div>
         </div>
 
-        {/* Right Column - Contact & Additional Info */}
+        {/* Right Column - Quick Stats */}
         <div className="space-y-6">
           
-          {/* Contact Information Card */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              Contact
-            </h2>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <span className="text-purple-600 font-semibold">Email:</span>
-                <span className="text-gray-700 break-all">{user?.email || 'N/A'}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-purple-600 font-semibold">Phone:</span>
-                <span className="text-gray-700">{user?.phone || 'Not provided'}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-purple-600 font-semibold">Address:</span>
-                <span className="text-gray-700">{user?.address || 'Not provided'}</span>
-              </div>
-            </div>
-          </div>
-
           {/* Quick Stats */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">

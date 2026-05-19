@@ -207,7 +207,8 @@ export const getSubjectMarksData = async (req, res) => {
       externalMarks: record.externalMarks || 0,
       Practical: record.Practical || 0,
       totalMarks: record.totalMarks || 0,
-      averageMarks: ((record.internalMarks || 0) + (record.externalMarks || 0) + (record.Practical || 0)) / 3,
+      // Average normalized to 0-100 scale: (sum of marks / total possible) * 100
+      averageMarks: (((record.internalMarks || 0) + (record.externalMarks || 0) + (record.Practical || 0)) / 130) * 100,
       attendance: record.attendance || 0
     }));
 

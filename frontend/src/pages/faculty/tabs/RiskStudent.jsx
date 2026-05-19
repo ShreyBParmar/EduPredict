@@ -245,7 +245,7 @@ const RiskStudent = () => {
 
           {/* INFO BOX */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
-            💡 <strong>Risk Criteria (Marks = Total Marks):</strong> High Risk: Att&lt;60% OR TotalMarks&lt;35 | Medium Risk: Att 60-74% OR TotalMarks 35-49 | Low Risk: Att≥75% AND TotalMarks≥50
+            💡 <strong>Risk Criteria:</strong> Score = (TotalMarks × 0.7) + (Attendance × 0.3) | High Risk: Score &lt; 45 | Medium Risk: 45 ≤ Score &lt; 70 | Low Risk: Score ≥ 70
           </div>
         </div>
       </div>

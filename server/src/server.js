@@ -8,13 +8,14 @@ import studentRoutes from "./routes/studentRoutes.js";
 import subjectFilter from "./routes/subjectFilter.js"
 import subjectRoutes from "./routes/subjectRoutes.js"
 
-dotenv.config();
+dotenv.config(); 
 connectDB();
 
 const app = express();
 
 app.use(cors())
 app.use(express.json());
+
 app.use("/api/auth", authRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/student", studentRoutes);

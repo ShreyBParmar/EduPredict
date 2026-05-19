@@ -4,39 +4,34 @@
  */
 
 /**
- * Determine risk level based on attendance and TOTAL MARKS
+ * Determine risk level based on weighted score
  * 
  * @param {number} attendance - Attendance percentage (0-100)
  * @param {number} totalMarks - TOTAL MARKS = InternalMarks + ExternalMarks + PracticalMarks
  * @returns {string} Risk level: "High" | "Medium" | "Low"
  * 
- * RISK THRESHOLDS:
- * - High Risk:   Attendance < 60%  OR  TotalMarks < 35
- * - Medium Risk: Attendance 60-74% OR  TotalMarks 35-49
- * - Low Risk:    Attendance ≥ 75%  AND TotalMarks ≥ 50
+ * RISK CALCULATION:
+ * Score = (TotalMarks * 0.7) + (Attendance * 0.3)
+ * - High Risk:   Score < 45
+ * - Medium Risk: Score 45-69
+ * - Low Risk:    Score ≥ 70
  */
 export const getRiskLevel = (attendance, totalMarks) => {
   // Ensure values are numbers and within valid range
   const att = Math.max(0, Math.min(100, Number(attendance) || 0));
   const marks = Math.max(0, Number(totalMarks) || 0);
 
-  // High Risk: Attendance < 60% OR Total Marks < 35
-  if (att < 60 || marks < 35) {
+  // Calculate weighted score: 70% marks + 30% attendance
+  const score = (marks * 0.7) + (att * 0.3);
+
+  // Determine risk level based on score
+  if (score < 45) {
     return "High";
-  }
-
-  // Medium Risk: Attendance between 60–74% OR Marks between 35–49
-  if ((att >= 60 && att < 75) || (marks >= 35 && marks < 50)) {
+  } else if (score < 70) {
     return "Medium";
-  }
-
-  // Low Risk: Attendance ≥ 75% AND Marks ≥ 50
-  if (att >= 75 && marks >= 50) {
+  } else {
     return "Low";
   }
-
-  // Default to Medium if conditions don't match perfectly
-  return "Medium";
 };
 
 /**

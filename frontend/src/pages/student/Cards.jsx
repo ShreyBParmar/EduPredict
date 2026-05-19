@@ -9,8 +9,8 @@ const Cards = ({ subjects = [] }) => {
         avgAttendance: 0,
         avgMarks: 0,
         grade: 'N/A',
-        riskLevel: 'LOW',
-        riskCount: 0
+        riskLevel: 'Low',
+        riskScore: 0
       };
     }
 
@@ -18,35 +18,41 @@ const Cards = ({ subjects = [] }) => {
     const totalAttendance = subjects.reduce((sum, s) => sum + (s.attendance || 0), 0);
     const avgAttendance = parseFloat((totalAttendance / subjects.length).toFixed(1));
 
-    // Calculate average marks
-    const totalMarks = subjects.reduce((sum, s) => sum + ((s.internalMarks || 0) + (s.externalMarks || 0)), 0);
+    // Calculate average marks (normalized to 0-100)
+    const totalMarks = subjects.reduce((sum, s) => {
+      const marks = ((s.internalMarks || 0) + (s.externalMarks || 0) + (s.Practical || 0)) / 130 * 100;
+      return sum + marks;
+    }, 0);
     const avgMarks = parseFloat((totalMarks / subjects.length).toFixed(1));
 
-    // Determine grade based on marks
+    // Determine grade based on normalized marks
     let grade = 'D';
     if (avgMarks >= 90) grade = 'A+';
     else if (avgMarks >= 80) grade = 'A';
     else if (avgMarks >= 70) grade = 'B';
     else if (avgMarks >= 60) grade = 'C';
 
-    // Count risk subjects
-    const riskCount = subjects.filter(s => s.status === 'Risk').length;
+    // Calculate risk level using weighted score formula
+    // Score = (TotalMarks * 0.7) + (Attendance * 0.3)
+    const riskScore = (avgMarks * 0.7) + (avgAttendance * 0.3);
+    
+    let riskLevel = 'Low';
+    if (riskScore < 45) {
+      riskLevel = 'High';
+    } else if (riskScore < 70) {
+      riskLevel = 'Medium';
+    }
 
-    // Determine risk level
-    let riskLevel = 'LOW';
-    if (avgAttendance < 75 || riskCount > 1) riskLevel = 'HIGH';
-    else if (avgAttendance < 85 || riskCount === 1) riskLevel = 'MEDIUM';
-
-    return { avgAttendance, avgMarks, grade, riskLevel, riskCount };
+    return { avgAttendance, avgMarks, grade, riskLevel, riskScore };
   };
 
   const stats = calculateStats();
 
   const getRiskColor = () => {
     switch (stats.riskLevel) {
-      case 'HIGH':
+      case 'High':
         return 'bg-red-100 text-red-700';
-      case 'MEDIUM':
+      case 'Medium':
         return 'bg-yellow-100 text-yellow-700';
       default:
         return 'bg-green-100 text-green-700';
@@ -55,9 +61,9 @@ const Cards = ({ subjects = [] }) => {
 
   const getRiskIcon = () => {
     switch (stats.riskLevel) {
-      case 'HIGH':
+      case 'High':
         return '🔴';
-      case 'MEDIUM':
+      case 'Medium':
         return '🟡';
       default:
         return '🟢';
@@ -143,7 +149,11 @@ const Cards = ({ subjects = [] }) => {
           </span>
 
           <p className="text-xs text-gray-600">
-            {stats.riskCount > 0 ? `${stats.riskCount} subject(s) at risk` : 'All subjects safe'}
+            Score: {stats.riskScore.toFixed(1)}/100
+          </p>
+          <p className="text-xs text-gray-500">
+            {stats.riskLevel === 'High' ? 'Score < 45' : 
+             stats.riskLevel === 'Medium' ? '45 ≤ Score < 70' : 'Score ≥ 70'}
           </p>
         </div>
 
