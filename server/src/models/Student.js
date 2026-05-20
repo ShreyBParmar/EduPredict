@@ -10,7 +10,7 @@ const studentSchema=new mongoose.Schema(
             type: String,
             unique:true,
             required: true,
-            maxlength: 9
+            maxlength: 14
         },
         semester:{
             type: Number,

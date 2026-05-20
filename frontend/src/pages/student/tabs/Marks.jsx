@@ -20,6 +20,18 @@ ChartJS.register(
 );
 
 const Marks = ({ subjects }) => {
+  // Function to calculate grade based on total marks out of 130
+  const calculateGrade = (totalMarks) => {
+    const percentage = (totalMarks / 130) * 100;
+    
+    if (percentage >= 90) return "A+";
+    if (percentage >= 80) return "A";
+    if (percentage >= 70) return "B";
+    if (percentage >= 60) return "C";
+    if (percentage >= 50) return "D";
+    return "F";
+  };
+
   if (!subjects || subjects.length === 0) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -29,15 +41,18 @@ const Marks = ({ subjects }) => {
   }
 
   // Prepare marks data
-  const marksData = subjects.map(subject => ({
-    subjectName: subject.subject?.subjectName || subject.subjectName || "Unknown",
-    subjectCode: subject.subject?.subjectCode || subject.subjectCode || "N/A",
-    internalMarks: subject.internalMarks || 0,
-    externalMarks: subject.externalMarks || 0,
-    Practical: subject.Practical || 0,
-    totalMarks: subject.totalMarks || 0,
-    grade: subject.grade || "-"
-  }));
+  const marksData = subjects.map(subject => {
+    const totalMarks = subject.totalMarks || 0;
+    return {
+      subjectName: subject.subject?.subjectName || subject.subjectName || "Unknown",
+      subjectCode: subject.subject?.subjectCode || subject.subjectCode || "N/A",
+      internalMarks: subject.internalMarks || 0,
+      externalMarks: subject.externalMarks || 0,
+      Practical: subject.Practical || 0,
+      totalMarks: totalMarks,
+      grade: calculateGrade(totalMarks)
+    };
+  });
 
   // Prepare chart data
   const chartData = {
@@ -115,7 +130,7 @@ const Marks = ({ subjects }) => {
                   <td className="px-6 py-4 text-center text-sm text-gray-700">{item.internalMarks}/30</td>
                   <td className="px-6 py-4 text-center text-sm text-gray-700">{item.externalMarks}/70</td>
                   <td className="px-6 py-4 text-center text-sm text-gray-700">{item.Practical}</td>
-                  <td className="px-6 py-4 text-center text-sm font-semibold text-blue-600">{item.totalMarks}/100</td>
+                  <td className="px-6 py-4 text-center text-sm font-semibold text-blue-600">{item.totalMarks}/130</td>
                   <td className="px-6 py-4 text-center">
                     <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
                       {item.grade}
