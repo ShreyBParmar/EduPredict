@@ -120,68 +120,132 @@ export const generateAcademicReportPDF = async (studentData, subjects) => {
     ['Average Attendance:', `${stats.avgAttendance}%`],
     ['Average Marks:', `${stats.avgMarks}%`],
     ['Total Subjects:', `${stats.totalSubjects}`],
-    ['Strong Subjects (≥70%):', `${stats.strongSubjects}`],
+    ['Strong Subjects (>=70%):', `${stats.strongSubjects}`],
     ['Weak Subjects (<60%):', `${stats.weakSubjects}`]
   ];
 
   statsData.forEach(([label, value]) => {
     doc.setFont(undefined, 'bold');
-    doc.text(label, 15, yPosition);
+    doc.text(label, 11, yPosition);
     doc.setFont(undefined, 'normal');
-    doc.text(String(value), 90, yPosition);
+    doc.text(String(value), 95, yPosition);
     yPosition += 8;
   });
 
   yPosition += 10;
 
   // ========== ATTENDANCE DETAILS ==========
-  yPosition = addSectionHeader('ATTENDANCE DETAILS', yPosition);
-  checkPageBreak(50);
+yPosition = addSectionHeader('ATTENDANCE DETAILS', yPosition);
+checkPageBreak(50);
 
-  // Attendance table
-  const attendanceHeaders = ['Subject', 'Code', 'Attendance %', 'Classes Held', 'Classes Attended'];
-  const attendanceData = subjects.map(subject => [
-    (subject.subject?.subjectName || subject.subjectName || 'Unknown').substring(0, 15),
-    subject.subject?.subjectCode || subject.subjectCode || 'N/A',
-    `${subject.attendance || 0}%`,
-    subject.classesHeld || 0,
-    subject.classesAttended || 0
-  ]);
+// Attendance table
+const attendanceHeaders = [
+  'Subject',
+  'Code',
+  'Attendance %',
+  'Classes Held',
+  'Classes Attended'
+];
 
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'bold');
-  
-  let cellX = 12;
-  const colWidths = [35, 20, 25, 28, 28];
-  
-  // Header
-  doc.setFillColor(200, 210, 230);
-  attendanceHeaders.forEach((header, i) => {
-    doc.rect(cellX, yPosition - 3, colWidths[i], 7, 'F');
-    doc.text(header, cellX + 2, yPosition + 2, { maxWidth: colWidths[i] - 4 });
-    cellX += colWidths[i];
+const attendanceData = subjects.map(subject => [
+  (subject.subject?.subjectName ||
+   subject.subjectName ||
+   'Unknown').substring(0, 18),
+
+  subject.subject?.subjectCode ||
+  subject.subjectCode ||
+  'N/A',
+
+  `${subject.attendance || 0}%`,
+
+  String(subject.classesHeld || 0),
+
+  String(subject.classesAttended || 0)
+]);
+
+doc.setFontSize(9);
+doc.setFont(undefined, 'bold');
+doc.setTextColor(0, 0, 0);
+
+let cellX = 10;
+
+// Wider table
+const colWidths = [48, 24, 28, 30, 40];
+
+// HEADER
+doc.setTextColor(0,0,0);
+doc.setFont(undefined,'bold');
+
+attendanceHeaders.forEach((header, i) => {
+
+  // NO RECT HERE
+
+  doc.text(
+    header,
+    cellX + 2,
+    yPosition + 2,
+    {
+      maxWidth: colWidths[i] - 4
+    }
+  );
+
+  cellX += colWidths[i];
+});
+
+yPosition += 8;
+
+doc.setFont(undefined, 'normal');
+doc.setFontSize(8);
+
+// DATA ROWS
+attendanceData.forEach((row, rowIdx) => {
+
+  checkPageBreak(10);
+
+  cellX = 10;
+
+  // Light zebra striping
+  const bgColor =
+    rowIdx % 2 === 0
+      ? 248
+      : 255;
+
+  doc.setFillColor(
+    bgColor,
+    bgColor,
+    bgColor
+  );
+
+  // Full row background
+  doc.rect(
+    10,
+    yPosition - 3,
+    pageWidth - 20,
+    7,
+    'F'
+  );
+
+  row.forEach((cell, colIdx) => {
+
+    doc.text(
+      String(cell),
+      cellX + 2,
+      yPosition + 2,
+      {
+        maxWidth:
+          colWidths[colIdx] - 4
+      }
+    );
+
+    cellX += colWidths[colIdx];
+
   });
 
-  yPosition += 8;
-  doc.setFont(undefined, 'normal');
+  yPosition += 7;
 
-  // Data rows
-  attendanceData.forEach((row, rowIdx) => {
-    checkPageBreak(10);
-    cellX = 12;
-    const bgColor = rowIdx % 2 === 0 ? 245 : 255;
-    doc.setFillColor(bgColor, bgColor, bgColor);
-    doc.rect(12, yPosition - 3, pageWidth - 24, 7, 'F');
-    
-    row.forEach((cell, colIdx) => {
-      const cellValue = String(cell !== null && cell !== undefined ? cell : '');
-      doc.text(cellValue, cellX + 2, yPosition + 2, { maxWidth: colWidths[colIdx] - 4 });
-      cellX += colWidths[colIdx];
-    });
-    yPosition += 7;
-  });
+});
 
-  yPosition += 8;
+yPosition += 8;
 
   // ========== MARKS DETAILS ==========
   yPosition = addSectionHeader('MARKS DETAILS', yPosition);
@@ -211,37 +275,79 @@ export const generateAcademicReportPDF = async (studentData, subjects) => {
   doc.setFontSize(8);
   doc.setFont(undefined, 'bold');
   
-  let marksX = 12;
-  const marksColWidths = [25, 18, 18, 18, 18, 18, 15];
-  
-  // Header
-  doc.setFillColor(200, 210, 230);
-  marksHeaders.forEach((header, i) => {
-    doc.rect(marksX, yPosition - 3, marksColWidths[i], 7, 'F');
-    doc.text(header, marksX + 2, yPosition + 2, { maxWidth: marksColWidths[i] - 4 });
-    marksX += marksColWidths[i];
+  let marksX = 10;
+const marksColWidths = [28, 20, 20, 20, 20, 20, 18];
+
+doc.setFont(undefined, 'bold');
+doc.setTextColor(0, 0, 0);
+
+// Header (NO RECTANGLE FILL)
+marksHeaders.forEach((header, i) => {
+
+  doc.text(
+    header,
+    marksX + 2,
+    yPosition + 2,
+    {
+      maxWidth: marksColWidths[i] - 4
+    }
+  );
+
+  marksX += marksColWidths[i];
+
+});
+
+yPosition += 8;
+
+doc.setFont(undefined, 'normal');
+
+// Data rows
+marksDataRows.forEach((row, rowIdx) => {
+
+  checkPageBreak(8);
+
+  marksX = 10;
+
+  const bgColor =
+    rowIdx % 2 === 0
+      ? 248
+      : 255;
+
+  doc.setFillColor(
+    bgColor,
+    bgColor,
+    bgColor
+  );
+
+  doc.rect(
+    10,
+    yPosition - 3,
+    pageWidth - 20,
+    7,
+    'F'
+  );
+
+  row.forEach((cell, colIdx) => {
+
+    doc.text(
+      String(cell ?? ''),
+      marksX + 2,
+      yPosition + 2,
+      {
+        maxWidth:
+          marksColWidths[colIdx] - 4
+      }
+    );
+
+    marksX += marksColWidths[colIdx];
+
   });
 
-  yPosition += 8;
-  doc.setFont(undefined, 'normal');
+  yPosition += 7;
 
-  // Data rows
-  marksDataRows.forEach((row, rowIdx) => {
-    checkPageBreak(8);
-    marksX = 12;
-    const bgColor = rowIdx % 2 === 0 ? 245 : 255;
-    doc.setFillColor(bgColor, bgColor, bgColor);
-    doc.rect(12, yPosition - 3, pageWidth - 24, 7, 'F');
-    
-    row.forEach((cell, colIdx) => {
-      const cellValue = String(cell !== null && cell !== undefined ? cell : '');
-      doc.text(cellValue, marksX + 2, yPosition + 2, { maxWidth: marksColWidths[colIdx] - 4 });
-      marksX += marksColWidths[colIdx];
-    });
-    yPosition += 7;
-  });
+});
 
-  yPosition += 10;
+yPosition += 10;
 
   // ========== FOOTER ==========
   checkPageBreak(20);
@@ -405,17 +511,24 @@ export const generateFacultyStudentReportPDF = async (facultyData, selectedSubje
     doc.setFontSize(8);
     doc.setFont(undefined, 'bold');
 
-    const headers = ['Student Name', 'Enrollment ID', 'Attend %', 'Internal', 'External', 'Total', 'Risk'];
-    const colWidths = [30, 22, 15, 15, 15, 15, 18];
+    const headers = ['Student Name', 'Enrollment ID', 'Attendence %', 'Internal', 'External', 'Total', 'Risk'];
+    const colWidths = [38, 28, 25, 18, 18, 18, 22];
 
     let headerX = 10;
-    doc.setFillColor(200, 210, 230);
-    
-    headers.forEach((header, i) => {
-      doc.rect(headerX, yPosition - 3, colWidths[i], 7, 'F');
-      doc.text(header, headerX + 2, yPosition + 2, { maxWidth: colWidths[i] - 4 });
-      headerX += colWidths[i];
-    });
+    doc.setFillColor(255, 255, 255); // pure white
+doc.setDrawColor(200, 200, 200); // border color
+doc.setTextColor(0, 0, 0); // black text
+
+headers.forEach((header, i) => {
+  doc.text(
+    header,
+    headerX + 2,
+    yPosition + 2,
+    { maxWidth: colWidths[i] - 4 }
+  );
+
+  headerX += colWidths[i];
+});
 
     yPosition += 8;
     doc.setFont(undefined, 'normal');
@@ -426,7 +539,7 @@ export const generateFacultyStudentReportPDF = async (facultyData, selectedSubje
         checkPageBreak(8);
         
         let cellX = 10;
-        const bgColor = rowIdx % 2 === 0 ? 245 : 255;
+        const bgColor = rowIdx % 2 === 0 ? 248 : 255;
         doc.setFillColor(bgColor, bgColor, bgColor);
         doc.rect(10, yPosition - 3, pageWidth - 20, 7, 'F');
 
