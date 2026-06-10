@@ -3,7 +3,7 @@
 import mongoose from "mongoose";
 import MasterSubject from "../models/MasterSubject.js";
 
-mongoose.connect("mongodb://127.0.0.1:27017/student_performance_db");
+mongoose.connect("mongodb://shreyparmar004:Mydbisgood101930@ac-qairu8n-shard-00-00.zof1x8f.mongodb.net:27017,ac-qairu8n-shard-00-01.zof1x8f.mongodb.net:27017,ac-qairu8n-shard-00-02.zof1x8f.mongodb.net:27017/?ssl=true&replicaSet=atlas-9tbikx-shard-0&authSource=admin&appName=Cluster0");
 
 const subjects = [
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import Analytics from "./tabs/Analytics";
 import MarkAttendence from "./tabs/MarkAttendence";
 import UploadMarks from "./tabs/UploadMarks";
@@ -9,6 +9,7 @@ import { generateFacultyStudentReportPDF } from "../../utils/generatePdfReport";
 import axios from "axios";
 
 const FacultyGraph = ({ subjects = [] }) => {
+  const userId=useId()
   const [active, setActive] = useState("Analytics");
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const { selectedSubject } = useSubject();
@@ -61,6 +62,8 @@ const FacultyGraph = ({ subjects = [] }) => {
 
       {/* PDF Download Button */}
       <div className="flex justify-end mb-6 pr-5">
+      
+      
         <button
           onClick={handleGeneratePDF}
           disabled={generatingPdf || !selectedSubject}

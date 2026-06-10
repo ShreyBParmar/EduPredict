@@ -9,6 +9,7 @@ import subjectFilter from "./routes/subjectFilter.js"
 import subjectRoutes from "./routes/subjectRoutes.js"
 
 dotenv.config(); 
+console.log("URI:", process.env.MONGO_URI);
 connectDB();
 
 const app = express();
