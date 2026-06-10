@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:5000/api/faculty";
+const API = `${import.meta.env.VITE_API_URL}/api/faculty`;
 
 export const getFacultyProfile = async () => {
   const token = localStorage.getItem("token");
@@ -59,7 +59,7 @@ export const getSubjectMarksData = async (subjectId, semester) => {
   const token = localStorage.getItem("token");
 
   const res = await axios.get(
-    "http://localhost:5000/api/faculty/profile",
+    "import.meta.env.VITE_API_URL/api/faculty/profile",
     {
       headers: {
         Authorization: `Bearer ${token}`
@@ -71,7 +71,7 @@ export const getSubjectMarksData = async (subjectId, semester) => {
 };
 */ }
 {/* 
-const API = "http://localhost:5000/api/faculty";
+const API = `${import.meta.env.VITE_API_URL}/api/faculty`;
 
 export const getFacultyProfile = async () => {
 

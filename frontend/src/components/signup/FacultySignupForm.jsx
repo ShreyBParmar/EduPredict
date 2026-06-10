@@ -48,7 +48,7 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/subjects/?sem=${sem}`
+        `${import.meta.env.VITE_API_URL}/api/subjects/?sem=${sem}`
       );
 
        if (!res.ok) {
@@ -108,7 +108,7 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     try {
       const res = await fetch(
-        "http://localhost:5000/api/auth/register_faculty",
+        `${import.meta.env.VITE_API_URL}/api/auth/register_faculty`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -67,7 +67,7 @@ const RiskStudent = () => {
       console.log("📡 Fetching risk students for subject:", selectedSubject._id);
 
       const res = await axios.get(
-        `http://localhost:5000/api/student/risk-students?subjectId=${selectedSubject._id}&semester=${selectedSubject?.semester || ""}`
+        `${import.meta.env.VITE_API_URL}/api/student/risk-students?subjectId=${selectedSubject._id}&semester=${selectedSubject?.semester || ""}`
       );
 
       console.log("📥 Response:", res.data);

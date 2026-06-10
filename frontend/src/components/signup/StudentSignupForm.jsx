@@ -39,7 +39,7 @@ const StudentSignupForm = () => {
       alert("Password should be more than 6 characters")
     }
 
-   const res= await fetch("http://localhost:5000/api/auth/register_student", {
+   const res= await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register_student`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
