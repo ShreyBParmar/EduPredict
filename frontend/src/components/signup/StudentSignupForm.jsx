@@ -24,7 +24,7 @@ const StudentSignupForm = () => {
       [e.target.name]: e.target.value
     })
   }
-
+  
   const handleSubmit = async(e) => {
     e.preventDefault()
     
@@ -38,7 +38,7 @@ const StudentSignupForm = () => {
     if(formData.password.length <= 6){
       alert("Password should be more than 6 characters")
     }
-
+    
    const res= await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register_student`, {
     method: "POST",
     headers: {
