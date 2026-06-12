@@ -18,8 +18,23 @@ function App() {
         <Route path="/signup/student" element={<StudentSignupForm />} />
         <Route path="/signup/faculty" element={<FacultySignupForm />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/student/dashboard" element={<StudentDashboard />}/>
-        <Route path="/faculty/dashboard" element={<FacultyDashboard />}/>
+        <Route
+  path="/student/dashboard"
+  element={
+    <ProtectedRoute role="student">
+      <StudentDashboard />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/faculty/dashboard"
+  element={
+    <ProtectedRoute role="faculty">
+      <FacultyDashboard />
+    </ProtectedRoute>
+  }
+/>
         <Route path="/forgot-password" element={<ForgotPassword />}/>
         <Route path="/reset-password/:token" element={<ResetPassword />}/>
       </Routes>
