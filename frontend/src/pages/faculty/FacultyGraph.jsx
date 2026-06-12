@@ -32,8 +32,6 @@ const FacultyGraph = ({ subjects = [] }) => {
         `${import.meta.env.VITE_API_URL}/api/student/risk-students?subjectId=${selectedSubject._id}&semester=${selectedSubject?.semester || ""}`
       );
 
-      console.log("📥 Fetched students response:", res.data);
-
       if (res.data.success && res.data.students) {
         await generateFacultyStudentReportPDF(user, selectedSubject, res.data.students);
         console.log("✅ PDF generated successfully");

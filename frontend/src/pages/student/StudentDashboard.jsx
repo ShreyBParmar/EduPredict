@@ -22,9 +22,6 @@ const StudentDashboard = () => {
         
         const data = await getStudentDashboard();
         
-        console.log("API Response: ", data);
-        console.log("Subjects from API: ", data.subjects);
-        
         if (data && data.subjects && Array.isArray(data.subjects)) {
           setSubjects(data.subjects);
           console.log("✅ Subjects loaded successfully:", data.subjects.length, "subjects");

@@ -64,13 +64,10 @@ const RiskStudent = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log("📡 Fetching risk students for subject:", selectedSubject._id);
 
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/student/risk-students?subjectId=${selectedSubject._id}&semester=${selectedSubject?.semester || ""}`
       );
-
-      console.log("📥 Response:", res.data);
 
       if (res.data.success) {
         setStudents(res.data.students || []);

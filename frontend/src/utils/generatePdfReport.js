@@ -402,11 +402,8 @@ export const generatePdfFromHTML = async (elementId, filename) => {
 };
 
 export const generateFacultyStudentReportPDF = async (facultyData, selectedSubject, students) => {
-  console.log("📋 PDF Generation Started");
-  console.log("Faculty Data:", facultyData);
-  console.log("Selected Subject:", selectedSubject);
-  console.log("Students Data:", students);
-
+  console.log("📋 PDF Generation Started")
+  
   const doc = new jsPDF('p', 'mm', 'a4');
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();

@@ -62,7 +62,6 @@ const Login = () => {
       
       // also keep token separately if other code expects it
       localStorage.setItem("token", data.token);
-      console.log("Login detail: ", data);
       
       // redirect based on role
       if (data.role === "student") {

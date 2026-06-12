@@ -45,8 +45,6 @@ const SubjectSelector = () => {
   (sub) => String(sub._id) === String(e.target.value)
 );
 
-console.log("✅ Selected Subject:", selected); // ADD THIS
-
 setSelectedSubject({
   _id: selected._id,
   subjectName: selected.subjectName,
