@@ -7,6 +7,7 @@ import StudentDashboard from "./pages/student/StudentDashboard"
 import FacultyDashboard from "./pages/faculty/FacultyDashboard"
 import ForgotPassword from "./pages/ForgotPassowrd"
 import ResetPassword from "./pages/ResetPassword"
+import ProtectedRoute from "./components/ProtectedRoute"
 
 
 function App() {
