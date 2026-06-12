@@ -22,8 +22,6 @@ const MarkAttendence = () => {
   const [attendance, setAttendance] = useState({}) // { studentId: true/false }
   const [loading, setLoading] = useState(false)
   const [selectAll,setSelectAll] = useState(false)
-
-  console.log(selectedDate);
   
 
   // Fetch students when subject changes
