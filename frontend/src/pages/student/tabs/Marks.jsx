@@ -96,11 +96,6 @@ const Marks = ({ subjects }) => {
 
   return (
     <div className="p-6 bg-gray-50 rounded-lg">
-      {/* Chart Section */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Marks Overview</h2>
-        <Bar data={chartData} options={chartOptions} height={300} />
-      </div>
 
       {/* Marks Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -169,6 +164,13 @@ const Marks = ({ subjects }) => {
           );
         })()}
       </div>
+
+       {/* Chart Section */}
+      <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Marks Overview</h2>
+        <Bar data={chartData} options={chartOptions} height={300} />
+      </div>
+
     </div>
   )
 }
