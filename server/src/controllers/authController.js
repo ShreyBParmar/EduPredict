@@ -277,7 +277,7 @@ export const forgotPassword=async(req,res)=>{
     await user.save();
 
     // Create reset link (send via email in production)
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    const resetLink = `${process.env.VITE_APP_URL}/reset-password/${resetToken}`;
 
     // For development (temporary)
     console.log("Password Reset Link:", resetLink);
