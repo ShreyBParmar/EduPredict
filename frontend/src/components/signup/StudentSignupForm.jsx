@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Eye, EyeOff,GraduationCap } from "lucide-react"; 
+import { Eye, EyeOff, GraduationCap, Loader2 } from "lucide-react"; 
 //import Student_signup_bg from "/src/assets/Student_signup_bg.jpg"
 
 const StudentSignupForm = () => {
@@ -17,6 +17,7 @@ const StudentSignupForm = () => {
 
    const [showPassword, setShowPassword] = useState(false);
    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -27,16 +28,20 @@ const StudentSignupForm = () => {
   
   const handleSubmit = async(e) => {
     e.preventDefault()
+    setLoading(true);
     
     try{
       
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords does not match")
+      setLoading(false);
       return
     }
 
     if(formData.password.length <= 6){
       alert("Password should be more than 6 characters")
+      setLoading(false);
+      return
     }
     
    const res= await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register_student`, {
@@ -55,16 +60,18 @@ const StudentSignupForm = () => {
 
     if (!res.ok) {
       alert(data.message || "Registration failed");
+      setLoading(false);
       return;
     }
 
     alert("Registration successful");
-
+    setLoading(false);
     navigate("/login");
   }
   catch(error){ 
     console.error(error);
     alert("Signup failed");
+    setLoading(false);
   }
   
 }
@@ -177,8 +184,16 @@ const StudentSignupForm = () => {
 
         <button
           type="submit"
-          className="mt-2 bg-blue-700 text-white py-2 rounded hover:bg-blue-500 hover:text-black">
-          Register
+          disabled={loading}
+          className="mt-2 bg-blue-700 text-white py-2 rounded hover:bg-blue-500 hover:text-black disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          {loading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Loading...
+            </>
+          ) : (
+            "Register"
+          )}
         </button>
         <span><a href="/login" className="hover:text-blue-500 hover:underline pl-">Already have an account?</a></span>
       </form>

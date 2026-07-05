@@ -1,12 +1,13 @@
 import { useState } from "react"
 import logo from '/src/assets/logo.png'
-import { Eye, EyeOff,GraduationCap } from "lucide-react";
+import { Eye, EyeOff, GraduationCap, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/authContext.jsx';
 
 const Login = () => {
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -29,6 +30,7 @@ const Login = () => {
 
   const handleSubmit= async(e)=>{
     e.preventDefault();
+    setLoading(true);
 
     try{
       const res= await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
@@ -44,6 +46,7 @@ const Login = () => {
 
       if (!res.ok) {
         alert(data.message || "Login failed");
+        setLoading(false);
         return;
       }
 
@@ -69,9 +72,11 @@ const Login = () => {
       } else {
         navigate("/faculty/dashboard");
       }
+      setLoading(false);
     } catch(error){
       console.error(error);
       alert("Login failed");
+      setLoading(false);
     }
   }
 
@@ -130,8 +135,16 @@ const Login = () => {
               </span>
               <button
                 type="submit"
-                className="mt-2 bg-blue-700 text-white py-2 rounded hover:bg-blue-500 hover:text-black">
-                Submit
+                disabled={loading}
+                className="mt-2 bg-blue-700 text-white py-2 rounded hover:bg-blue-500 hover:text-black disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  "Submit"
+                )}
               </button>
       </form>
       </div>

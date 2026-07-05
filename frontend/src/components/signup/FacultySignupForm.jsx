@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Eye, EyeOff, GraduationCap } from "lucide-react";
+import { Eye, EyeOff, GraduationCap, Loader2 } from "lucide-react";
 
 
 
@@ -19,6 +19,7 @@ const FacultySignupForm = () => {
 
   const [showPassword, setShowPassword] = useState(false);
 const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [teachingData, setTeachingData] = useState([]);
 
@@ -82,21 +83,25 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   // 🔹 Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     // validations
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match");
+      setLoading(false);
       return;
     }
 
     if (teachingData.length === 0) {
       alert("Add at least one semester");
+      setLoading(false);
       return;
     }
 
     for (const item of teachingData) {
       if (!item.semester || item.subjects.length === 0) {
         alert("Each semester must have subjects");
+        setLoading(false);
         return;
       }
     }
@@ -120,15 +125,18 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
       if (!res.ok) {
         alert(data.message);
+        setLoading(false);
         return;
       }
 
       alert("Faculty Registered Successfully");
+      setLoading(false);
       navigate("/login");
 
     } catch (err) {
       console.error(err);
       alert("Signup failed");
+      setLoading(false);
     }
   };
 
@@ -270,8 +278,18 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
         ))}
 
         {/* Submit */}
-        <button className="w-full bg-green-600 text-white py-2 rounded">
-          Register
+        <button 
+          type="submit"
+          disabled={loading}
+          className="w-full bg-green-600 text-white py-2 rounded disabled:bg-green-400 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          {loading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Loading...
+            </>
+          ) : (
+            "Register"
+          )}
         </button>
 
         <span>
