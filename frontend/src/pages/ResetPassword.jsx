@@ -1,13 +1,12 @@
-import {useState} from 'react'
-import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
-import { Eye, EyeOff,GraduationCap } from "lucide-react";
+import { useState } from 'react';
+import { useNavigate, useParams } from "react-router-dom";
+import { Eye, EyeOff, GraduationCap, Lock } from "lucide-react";
 
 const ResetPassword = () => {
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: ""
-  })
+  });
 
   const { token } = useParams();
   const navigate = useNavigate();
@@ -20,22 +19,22 @@ const ResetPassword = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
-    })
-  }
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-      try{
-        if (formData.password !== formData.confirmPassword) {
-        alert("Passwords do not match")
-        return
+    try {
+      if (formData.password !== formData.confirmPassword) {
+        alert("Passwords do not match");
+        return;
       }
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/reset-password/${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({...formData})
+        body: JSON.stringify({ ...formData })
       });
 
       const data = await res.json();
@@ -47,76 +46,95 @@ const ResetPassword = () => {
 
       setMessage("Password reset successful");
       setTimeout(() => navigate("/login"), 2000);
-  }
-
-  catch(error){
-    console.error(error);
-    alert("Reset password failed");
-  }
-}
+    } catch (error) {
+      console.error(error);
+      alert("Reset password failed");
+    }
+  };
 
   return (
-    <div>
-        <div className="min-h-screen flex items-center justify-center ">
-        <form
-        onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-lg shadow-xl/70 w-96 grid gap-3">
-        
-         <div className="relative flex items-center justify-center">
-                      <div className="bg-blue-600 w-10 h-10 rounded-2xl absolute left-0 flex items-center justify-center">
-                        <GraduationCap className="w-6 h-6 text-white" />
-                      </div>
-                      <h2 className="text-xl font-semibold text-center pr-3">Forgot password</h2>
-                    </div>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="bg-white p-8 rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 w-full max-w-md space-y-6">
+        {/* Header Branding */}
+        <div className="flex flex-col items-center justify-center text-center space-y-2">
+          <div className="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-500/30 text-white">
+            <GraduationCap className="w-8 h-8" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Reset Password</h1>
+          <p className="text-sm text-slate-500">Create a new secure password for your account.</p>
+        </div>
 
-      <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  className="border p-2 rounded w-full pr-10 focus:placeholder-transparent"
-                  onChange={handleChange}
-                  required
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              New Password
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <Lock size={18} />
               </div>
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="••••••••"
+                value={formData.password}
+                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all outline-none"
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
 
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  placeholder="Confirm Password"
-                  value={formData.confirmPassword}
-                  className="border p-2 rounded w-full pr-10 focus:placeholder-transparent"
-                  onChange={handleChange}
-                  required
-                />
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowConfirmPassword(!showConfirmPassword)
-                  }
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              Confirm New Password
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <Lock size={18} />
               </div>
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all outline-none"
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
 
-      <button type="submit" className="mt-2 bg-blue-700 text-white py-2 rounded hover:bg-blue-500 hover:text-black">Reset Password</button>
-      {message && <p>{message}</p>}
-    </form>
-    </div>
-    </div>
-  )
-}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            Reset Password
+          </button>
+        </form>
 
-export default ResetPassword
+        {message && (
+          <p className="text-sm text-blue-600 text-center font-medium bg-blue-50 py-2 px-3 rounded-lg border border-blue-100">
+            {message}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ResetPassword;

@@ -10,6 +10,7 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { useAuth } from "../../../context/authContext";
+import { CalendarCheck, TrendingUp, AlertTriangle } from "lucide-react";
 
 ChartJS.register(
   CategoryScale,
@@ -26,8 +27,8 @@ const Attendence = ({ subjects }) => {
   // Check if data is available
   if (!subjects || subjects.length === 0) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <p className="text-gray-500 text-lg">No attendance data available</p>
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center text-slate-500">
+        <p className="text-sm font-medium">No attendance data available</p>
       </div>
     );
   }
@@ -48,10 +49,10 @@ const Attendence = ({ subjects }) => {
       {
         label: "Attendance %",
         data: attendanceData.map(item => item.attendance),
-        backgroundColor: "#3B82F6",
-        borderColor: "#1E40AF",
+        backgroundColor: "#2563eb",
+        borderColor: "#1d4ed8",
         borderWidth: 1,
-        borderRadius: 4
+        borderRadius: 6
       }
     ]
   };
@@ -59,77 +60,126 @@ const Attendence = ({ subjects }) => {
   const chartOptions = {
     indexAxis: "x",
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: true,
-        position: "top"
+        display: false
       },
       title: {
         display: true,
-        text: `Subject-wise Attendance for Semester ${user?.semester || ""}`
+        text: `Subject-wise Attendance for Semester ${user?.semester || ""}`,
+        color: "#0f172a",
+        font: { size: 14, weight: "bold" }
       }
     },
     scales: {
       y: {
         beginAtZero: true,
         max: 100,
+        grid: { color: "#f1f5f9" },
         ticks: {
+          color: "#64748b",
           callback: function(value) {
             return value + "%";
           }
         }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: "#64748b" }
       }
     }
   };
 
   return (
-    <div className="p-6 bg-gray-50 rounded-lg">
+    <div className="space-y-6">
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {(() => {
+          const attendances = attendanceData.map(item => item.attendance);
+          const average = (attendances.reduce((a, b) => a + b, 0) / attendances.length).toFixed(2);
+          const highest = Math.max(...attendances);
+          const lowest = Math.min(...attendances);
 
-      {/* Subject List Section */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="bg-blue-50 px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800">Subject Attendance Summary</h3>
+          return (
+            <>
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Average Attendance</p>
+                  <p className="text-2xl font-bold text-blue-600 mt-1">{average}%</p>
+                </div>
+                <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                  <CalendarCheck size={20} />
+                </div>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Highest Attendance</p>
+                  <p className="text-2xl font-bold text-emerald-600 mt-1">{parseFloat(highest).toFixed(2)}%</p>
+                </div>
+                <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                  <TrendingUp size={20} />
+                </div>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Lowest Attendance</p>
+                  <p className="text-2xl font-bold text-rose-600 mt-1">{parseFloat(lowest).toFixed(2)}%</p>
+                </div>
+                <div className="p-3 bg-rose-50 text-rose-600 rounded-xl">
+                  <AlertTriangle size={20} />
+                </div>
+              </div>
+            </>
+          );
+        })()}
+      </div>
+
+      {/* Subject Attendance Table */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
+          <h3 className="text-sm font-bold text-slate-900 tracking-tight">Subject Attendance Summary</h3>
+          <span className="text-xs text-slate-500 font-medium">{attendanceData.length} Subjects Total</span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-100 border-b border-gray-200">
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Subject Code</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Subject Name</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Classes Attended</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Classes Held</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Attendance %</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Status</th>
+          <table className="w-full text-sm text-left">
+            <thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
+              <tr>
+                <th className="px-6 py-3.5">Subject Code</th>
+                <th className="px-6 py-3.5">Subject Name</th>
+                <th className="px-6 py-3.5 text-center">Attended</th>
+                <th className="px-6 py-3.5 text-center">Classes Held</th>
+                <th className="px-6 py-3.5 text-center">Attendance %</th>
+                <th className="px-6 py-3.5 text-center">Status</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100">
               {attendanceData.map((item, index) => {
-                // Determine status based on attendance percentage
-                let statusColor = "text-green-600";
-                let statusBg = "bg-green-100";
+                let statusBadge = "bg-emerald-50 text-emerald-700 border-emerald-200";
                 let statusText = "Good";
 
                 if (item.attendance < 75) {
-                  statusColor = "text-red-600";
-                  statusBg = "bg-red-100";
+                  statusBadge = "bg-rose-50 text-rose-700 border-rose-200";
                   statusText = "Low";
                 } else if (item.attendance < 85) {
-                  statusColor = "text-yellow-600";
-                  statusBg = "bg-yellow-100";
+                  statusBadge = "bg-amber-50 text-amber-700 border-amber-200";
                   statusText = "Moderate";
                 }
 
                 return (
-                  <tr key={index} className="border-b border-gray-200 hover:bg-gray-50 transition">
-                    <td className="px-6 py-4 text-sm text-gray-600">{item.subjectCode}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-800">{item.subjectName}</td>
-                    <td className="px-6 py-4 text-center text-sm font-medium text-gray-700">{item.classesAttended}</td>
-                    <td className="px-6 py-4 text-center text-sm font-medium text-gray-700">{item.classesHeld}</td>
-                    <td className="px-6 py-4 text-center text-sm font-semibold text-blue-600">{parseFloat(item.attendance).toFixed(2)}%</td>
+                  <tr key={index} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-6 py-4 font-mono text-xs font-medium text-slate-600">{item.subjectCode}</td>
+                    <td className="px-6 py-4 font-semibold text-slate-900">{item.subjectName}</td>
+                    <td className="px-6 py-4 text-center font-semibold text-slate-700">{item.classesAttended}</td>
+                    <td className="px-6 py-4 text-center font-semibold text-slate-700">{item.classesHeld}</td>
+                    <td className="px-6 py-4 text-center font-bold text-blue-600">
+                      {parseFloat(item.attendance).toFixed(2)}%
+                    </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBg} ${statusColor}`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold border ${statusBadge}`}>
                         {statusText}
                       </span>
                     </td>
@@ -141,41 +191,13 @@ const Attendence = ({ subjects }) => {
         </div>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-4 mt-8">
-        {(() => {
-          const attendances = attendanceData.map(item => item.attendance);
-          const average = (attendances.reduce((a, b) => a + b, 0) / attendances.length).toFixed(2);
-          const highest = Math.max(...attendances);
-          const lowest = Math.min(...attendances);
-
-          return (
-            <>
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <p className="text-gray-600 text-sm font-medium mb-2">Average Attendance</p>
-                <p className="text-3xl font-bold text-blue-600">{average}%</p>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <p className="text-gray-600 text-sm font-medium mb-2">Highest</p>
-                <p className="text-3xl font-bold text-green-600">{parseFloat(highest).toFixed(2)}%</p>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <p className="text-gray-600 text-sm font-medium mb-2">Lowest</p>
-                <p className="text-3xl font-bold text-red-600">{parseFloat(lowest).toFixed(2)}%</p>
-              </div>
-            </>
-          );
-        })()}
+      {/* Bar Chart Container */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="h-72">
+          <Bar data={chartData} options={chartOptions} />
+        </div>
       </div>
-
-      {/* Chart Section */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Attendance Overview</h2>
-        <Bar data={chartData} options={chartOptions} height={300} />
-      </div>
-      
     </div>
-
   );
 };
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,11 +14,11 @@ import {
 
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { Bar, Doughnut } from "react-chartjs-2";
-import { useSubject } from '../../../context/subjectContext'
-import { useAuth } from '../../../context/authContext'
-import { getSubjectMarksData } from '../../../services/facultyApi'
+import { useSubject } from '../../../context/subjectContext';
+import { useAuth } from '../../../context/authContext';
+import { getSubjectMarksData } from '../../../services/facultyApi';
+import { RefreshCw, Users, BookOpen, Award, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
-// ✅ Register EVERYTHING (including plugin)
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -32,33 +32,32 @@ ChartJS.register(
   ChartDataLabels
 );
 
-
 const Analytics = () => {
-  const { selectedSubject } = useSubject()
-  const { user } = useAuth()
-  const [marksData, setMarksData] = useState(null)
-  const [classStats, setClassStats] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const { selectedSubject } = useSubject();
+  const { user } = useAuth();
+  const [marksData, setMarksData] = useState(null);
+  const [classStats, setClassStats] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // Fetch data when subject changes
   useEffect(() => {
     if (selectedSubject?._id && user?.semester) {
-      fetchMarksData()
+      fetchMarksData();
     }
-  }, [selectedSubject?._id])
+  }, [selectedSubject?._id]);
 
   const fetchMarksData = async () => {
     try {
-      setLoading(true)
-      const data = await getSubjectMarksData(selectedSubject._id, user.semester)
-      setMarksData(data.studentMarks)
-      setClassStats(data.classStats)
+      setLoading(true);
+      const data = await getSubjectMarksData(selectedSubject._id, user.semester);
+      setMarksData(data.studentMarks);
+      setClassStats(data.classStats);
     } catch (error) {
-      console.error('Error fetching marks data:', error)
+      console.error('Error fetching marks data:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Prepare chart data - Overview
   const analyticsData = classStats ? {
@@ -67,7 +66,8 @@ const Analytics = () => {
       {
         label: "Average Marks",
         data: [classStats.avgInternal, classStats.avgExternal, classStats.avgPractical],
-        backgroundColor: ["#3B82F6", "#10B981", "#F59E0B"]
+        backgroundColor: ["#2563eb", "#059669", "#d97706"],
+        borderRadius: 6
       }
     ]
   } : {
@@ -76,7 +76,8 @@ const Analytics = () => {
       {
         label: "Overview",
         data: [0, 0, 0],
-        backgroundColor: ["#3B82F6", "#10B981", "#F59E0B"]
+        backgroundColor: ["#2563eb", "#059669", "#d97706"],
+        borderRadius: 6
       }
     ]
   };
@@ -91,7 +92,7 @@ const Analytics = () => {
           marksData.filter(s => s.averageMarks >= 50 && s.averageMarks < 75).length,
           marksData.filter(s => s.averageMarks < 50).length
         ],
-        backgroundColor: ["#22C55E", "#F59E0B", "#EF4444"]
+        backgroundColor: ["#10b981", "#f59e0b", "#ef4444"]
       }
     ]
   } : {
@@ -99,181 +100,172 @@ const Analytics = () => {
     datasets: [
       {
         data: [0, 0, 0],
-        backgroundColor: ["#22C55E", "#F59E0B", "#EF4444"]
+        backgroundColor: ["#10b981", "#f59e0b", "#ef4444"]
       }
     ]
   };
 
   const baseOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     animation: false,
     plugins: {
       legend: {
-        position: "bottom"
-      }
+        position: "bottom",
+        labels: { font: { size: 12, weight: "600" }, padding: 15 }
+      },
+      datalabels: { display: false }
+    },
+    scales: {
+      y: { grid: { color: "#f1f5f9" }, ticks: { color: "#64748b" } },
+      x: { grid: { display: false }, ticks: { color: "#64748b" } }
     }
   };
 
-  // ✅ Doughnut specific (with labels)
   const doughnutOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    cutout: "5%",
-
-    layout: {
-      padding: 10
-    },
-
+    cutout: "65%",
+    layout: { padding: 10 },
     plugins: {
-      legend: {
-        position: "bottom"
-      },
-
+      legend: { position: "bottom", labels: { font: { size: 12, weight: "600" }, padding: 15 } },
       datalabels: {
-        color: "#fff", // 🔥 white text (important for visibility)
-        font: {
-          weight: "bold",
-          size: 12
-        },
-
+        color: "#ffffff",
+        font: { weight: "bold", size: 11 },
         formatter: (value, context) => {
-          if (value === 0) return ""; // hide zero
-
+          if (value === 0) return "";
           const label = context.chart.data.labels[context.dataIndex];
-
-          // 🔥 show short label (avoid clutter)
           return `${label.split(" ")[0]}\n${value}`;
         },
-
         anchor: "center",
         align: "center"
       }
     }
-};
+  };
+
+  if (!selectedSubject) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center text-slate-500 shadow-xs">
+        <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+        <h3 className="text-base font-semibold text-slate-800">No Subject Selected</h3>
+        <p className="text-xs text-slate-500 mt-1">Please select a subject from the filter dropdown above to view class analytics.</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center text-slate-500 shadow-xs flex flex-col items-center justify-center space-y-3">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <p className="text-sm font-medium text-slate-600">Fetching class analytics data...</p>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {!selectedSubject ? (
-        <div className="bg-white p-6 rounded-xl shadow-md text-center text-gray-500">
-          <p>Select a subject to view analytics</p>
+    <div className="space-y-6">
+      {/* Header & Refresh Action */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900 tracking-tight">Class Analytics Overview</h2>
+          <p className="text-xs text-slate-500">Subject: <span className="font-semibold text-slate-700">{selectedSubject?.subjectName}</span></p>
         </div>
-      ) : loading ? (
-        <div className="bg-white p-6 rounded-xl shadow-md text-center text-gray-500">
-          <p>Loading analytics data...</p>
+
+        <button
+          onClick={fetchMarksData}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+          title="Refresh the analytics data"
+        >
+          <RefreshCw size={14} className="text-slate-500" />
+          <span>Refresh Data</span>
+        </button>
+      </div>
+
+      {/* Class Statistics Summary KPI Cards */}
+      {classStats && (
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Students</p>
+            <p className="text-2xl font-bold text-blue-600 mt-1">{classStats.totalStudents}</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Avg Internal</p>
+            <p className="text-2xl font-bold text-purple-600 mt-1">{classStats.avgInternal}</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Avg External</p>
+            <p className="text-2xl font-bold text-emerald-600 mt-1">{classStats.avgExternal}</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Avg Practical</p>
+            <p className="text-2xl font-bold text-amber-600 mt-1">{classStats.avgPractical}</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Avg Total</p>
+            <p className="text-2xl font-bold text-indigo-600 mt-1">{classStats.avgTotal}</p>
+          </div>
         </div>
-      ) : (
-        <>
-          {/* Refresh Button */}
-          <div className="mb-4 flex justify-end">
-            <button
-              onClick={fetchMarksData}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-              title="Refresh the analytics data"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Refresh Data
-            </button>
+      )}
+
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Bar Chart Card */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+          <h3 className="text-sm font-bold text-slate-900">Class Performance Metrics</h3>
+          <div className="h-64">
+            <Bar data={analyticsData} options={baseOptions} />
+          </div>
+        </div>
+
+        {/* Doughnut Chart Card */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+          <h3 className="text-sm font-bold text-slate-900">Student Performance Distribution</h3>
+          <div className="h-64">
+            <Doughnut data={riskDistribution} options={doughnutOptions} />
+          </div>
+        </div>
+      </div>
+
+      {/* Detailed Student Performance Table */}
+      {marksData && (
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div className="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-900">Detailed Student Marks Roster</h3>
+            <span className="text-xs text-slate-500 font-medium">{marksData.length} Records Loaded</span>
           </div>
 
-          {/* Class Statistics Summary */}
-          {classStats && (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <p className="text-sm text-gray-600">Total Students</p>
-                <p className="text-2xl font-bold text-blue-600">{classStats.totalStudents}</p>
-              </div>
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <p className="text-sm text-gray-600">Avg Internal</p>
-                <p className="text-2xl font-bold text-purple-600">{classStats.avgInternal}</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <p className="text-sm text-gray-600">Avg External</p>
-                <p className="text-2xl font-bold text-green-600">{classStats.avgExternal}</p>
-              </div>
-              <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                <p className="text-sm text-gray-600">Avg Practical</p>
-                <p className="text-2xl font-bold text-orange-600">{classStats.avgPractical}</p>
-              </div>
-              <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-                <p className="text-sm text-gray-600">Avg Total</p>
-                <p className="text-2xl font-bold text-indigo-600">{classStats.avgTotal}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Bar Chart */}
-            <div className="bg-white p-4 rounded-xl shadow-md">
-              <h2 className="text-lg font-semibold mb-2">
-                Class Performance Metrics
-              </h2>
-              <div className="h-[300px]">
-                <Bar
-                  data={analyticsData}
-                  options={{ ...baseOptions, maintainAspectRatio: false }}
-                />
-              </div>
-            </div>
-
-            {/* Doughnut Chart */}
-            <div className="bg-white p-4 rounded-xl shadow-md">
-              <h2 className="text-lg font-semibold mb-2">
-                Student Performance Distribution
-              </h2>
-              <div className="h-[300px]">
-                <Doughnut
-                  data={riskDistribution}
-                  options={{
-                    ...doughnutOptions,
-                    maintainAspectRatio: false,
-                    cutout: "65%"
-                  }}
-                />
-              </div>
-            </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-slate-50/50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
+                <tr>
+                  <th className="px-6 py-3.5">Student Name</th>
+                  <th className="px-6 py-3.5 text-center">Internal</th>
+                  <th className="px-6 py-3.5 text-center">External</th>
+                  <th className="px-6 py-3.5 text-center">Practical</th>
+                  <th className="px-6 py-3.5 text-center">Total</th>
+                  <th className="px-6 py-3.5 text-center">Average Marks</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {marksData.map((student, idx) => (
+                  <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-slate-900">{student.studentName}</td>
+                    <td className="px-6 py-4 text-center font-medium text-slate-700">{student.internalMarks}</td>
+                    <td className="px-6 py-4 text-center font-medium text-slate-700">{student.externalMarks}</td>
+                    <td className="px-6 py-4 text-center font-medium text-slate-700">{student.Practical}</td>
+                    <td className="px-6 py-4 text-center font-bold text-slate-900">{student.totalMarks}</td>
+                    <td className="px-6 py-4 text-center font-bold text-blue-600">
+                      {student.averageMarks.toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          {/* Detailed Student Performance Table */}
-          {marksData && (
-            <div className="mt-6 bg-white p-4 rounded-xl shadow-md">
-              <h2 className="text-lg font-semibold mb-4">Student Details</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="p-3 text-left">Student Name</th>
-                      <th className="p-3 text-center">Internal</th>
-                      <th className="p-3 text-center">External</th>
-                      <th className="p-3 text-center">Practical</th>
-                      <th className="p-3 text-center">Total</th>
-                      <th className="p-3 text-center">Average</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {marksData.map((student, idx) => (
-                      <tr key={idx} className="border-b hover:bg-gray-50">
-                        <td className="p-3">{student.studentName}</td>
-                        <td className="p-3 text-center">{student.internalMarks}</td>
-                        <td className="p-3 text-center">{student.externalMarks}</td>
-                        <td className="p-3 text-center">{student.Practical}</td>
-                        <td className="p-3 text-center font-semibold">{student.totalMarks}</td>
-                        <td className="p-3 text-center font-semibold text-blue-600">
-                          {student.averageMarks.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </>
+        </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Analytics
+export default Analytics;

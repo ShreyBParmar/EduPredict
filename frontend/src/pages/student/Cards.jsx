@@ -1,8 +1,9 @@
-import React from 'react'
+import React from 'react';
+import { Calendar, Award, TrendingUp, ShieldAlert, ShieldCheck, Shield } from 'lucide-react';
 
 const Cards = ({ subjects = [] }) => {
   
-  // Calculate real-time data
+  // Calculate real-time data - PRESERVED LOGIC
   const calculateStats = () => {
     if (!subjects || subjects.length === 0) {
       return {
@@ -13,7 +14,7 @@ const Cards = ({ subjects = [] }) => {
         riskScore: 0,
         predictedGrade: 'N/A',
         subjectsStrong: 0,
-        subjectsWeek: 0,
+        subjectsWeak: 0,
         improvementPotential: 0
       };
     }
@@ -84,139 +85,139 @@ const Cards = ({ subjects = [] }) => {
 
   const stats = calculateStats();
 
-  const getRiskColor = () => {
+  const getRiskBadgeStyle = () => {
     switch (stats.riskLevel) {
       case 'High':
-        return 'bg-red-100 text-red-700';
+        return 'bg-rose-50 text-rose-700 border-rose-200';
       case 'Medium':
-        return 'bg-yellow-100 text-yellow-700';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       default:
-        return 'bg-green-100 text-green-700';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
     }
   };
 
   const getRiskIcon = () => {
     switch (stats.riskLevel) {
       case 'High':
-        return '🔴';
+        return <ShieldAlert className="w-5 h-5 text-rose-600" />;
       case 'Medium':
-        return '🟡';
+        return <Shield className="w-5 h-5 text-amber-600" />;
       default:
-        return '🟢';
+        return <ShieldCheck className="w-5 h-5 text-emerald-600" />;
     }
   };
 
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-6 mt-6">
-        
-        {/* Attendance Card */}
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-lg transition">
-          <div className="flex justify-between items-center">
-            <h3 className="text-gray-700 text-sm font-semibold">Attendance</h3>
-            <span className="text-blue-500 text-2xl">📅</span>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Attendance Card */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Attendance</span>
+          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+            <Calendar className="w-5 h-5" />
           </div>
+        </div>
 
-          <h2 className="text-3xl font-bold text-gray-900">
+        <div>
+          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
             {stats.avgAttendance}%
           </h2>
-
-          <div className="w-full bg-gray-300 h-2 rounded-full overflow-hidden">
+          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-3">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all" 
-              style={{ width: `${stats.avgAttendance}%` }}
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+              style={{ width: `${Math.min(100, Math.max(0, stats.avgAttendance))}%` }}
             ></div>
           </div>
-          
-          <p className="text-xs text-gray-600">Based on {subjects.length} subjects</p>
         </div>
 
-        {/* Average Marks Card */}
-        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-lg transition">
-          <div className="flex justify-between items-center">
-            <h3 className="text-gray-700 text-sm font-semibold">Average Marks</h3>
-            <span className="text-green-500 text-2xl">🎖</span>
+        <p className="text-[11px] text-slate-500 font-medium">
+          Evaluated across <span className="font-semibold text-slate-700">{subjects.length} subjects</span>
+        </p>
+      </div>
+
+      {/* Average Marks Card */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Average Marks</span>
+          <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+            <Award className="w-5 h-5" />
           </div>
+        </div>
 
-          <h2 className="text-3xl font-bold text-gray-900">
-            {stats.avgMarks}/100
-          </h2>
-
-          <div className="w-full bg-gray-300 h-2 rounded-full overflow-hidden">
+        <div>
+          <div className="flex items-baseline gap-1">
+            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
+              {stats.avgMarks}
+            </h2>
+            <span className="text-sm font-semibold text-slate-400">/ 100</span>
+          </div>
+          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-3">
             <div 
-              className="bg-green-600 h-2 rounded-full transition-all" 
-              style={{ width: `${stats.avgMarks}%` }}
+              className="bg-emerald-600 h-2 rounded-full transition-all duration-300" 
+              style={{ width: `${Math.min(100, Math.max(0, stats.avgMarks))}%` }}
             ></div>
           </div>
-
-          <p className="text-xs text-gray-600">Out of {subjects.length} subjects</p>
         </div>
 
-        {/* Predicted Grade Card */}
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-lg transition">
-          <div className="flex justify-between items-center">
-            <h3 className="text-gray-700 text-sm font-semibold">Predicted Grade</h3>
-            <span className="text-purple-500 text-2xl">📈</span>
-          </div>
+        <p className="text-[11px] text-slate-500 font-medium">
+          Normalized score out of 100
+        </p>
+      </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-600 mb-1">Current</p>
-              <h2 className="text-4xl font-bold text-purple-700">
-                {stats.grade}
-              </h2>
-            </div>
-            <div className="text-2xl">→</div>
-            <div>
-              <p className="text-xs text-gray-600 mb-1">Projected</p>
-              <h2 className="text-4xl font-bold text-purple-600">
-                {stats.predictedGrade}
-              </h2>
-            </div>
+      {/* Predicted Grade Card */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Predicted Grade</span>
+          <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
+            <TrendingUp className="w-5 h-5" />
           </div>
-
-          <div className="bg-white rounded-lg p-3 text-xs text-gray-700 space-y-1">
-            <div className="flex justify-between">
-              <span>Strong in:</span>
-              <span className="font-semibold text-green-600">{stats.subjectsStrong}/{subjects.length}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Needs work:</span>
-              <span className="font-semibold text-red-600">{stats.subjectsWeak}/{subjects.length}</span>
-            </div>
-          </div>
-
-          <p className="text-xs text-gray-600 text-center">
-            {stats.avgMarks >= 90 ? '🌟 Excellent Performance' : 
-             stats.avgMarks >= 80 ? '✨ Very Good' :
-             stats.avgMarks >= 70 ? '👍 Good' :
-             stats.avgMarks >= 60 ? '⚡ Satisfactory' : '⚠️ Needs Improvement'}
-          </p>
         </div>
 
-        {/* Risk Level Card */}
-        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-lg transition">
-          <div className="flex justify-between items-center">
-            <h3 className="text-gray-700 text-sm font-semibold">Risk Level</h3>
-            <span className="text-2xl">{getRiskIcon()}</span>
+        <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+          <div>
+            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Current</p>
+            <p className="text-2xl font-bold text-slate-800">{stats.grade}</p>
           </div>
-
-          <span className={`${getRiskColor()} text-sm font-bold px-4 py-2 rounded-full w-fit text-center`}>
-            {stats.riskLevel}
-          </span>
-
-          <p className="text-xs text-gray-600">
-            Score: {stats.riskScore.toFixed(1)}/100
-          </p>
-          <p className="text-xs text-gray-500">
-            {stats.riskLevel === 'High' ? 'Score < 45' : 
-             stats.riskLevel === 'Medium' ? '45 ≤ Score < 70' : 'Score ≥ 70'}
-          </p>
+          <span className="text-slate-300 font-bold">→</span>
+          <div className="text-right">
+            <p className="text-[10px] uppercase font-bold text-purple-600 tracking-wider">Projected</p>
+            <p className="text-2xl font-bold text-purple-700">{stats.predictedGrade}</p>
+          </div>
         </div>
 
+        <div className="flex items-center justify-between text-[11px] font-medium text-slate-600">
+          <span>Strong: <strong className="text-emerald-600">{stats.subjectsStrong}</strong></span>
+          <span>Needs Work: <strong className="text-rose-600">{stats.subjectsWeak}</strong></span>
+        </div>
+      </div>
+
+      {/* Risk Level Card */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Risk Level</span>
+          <div className="p-2.5 bg-slate-50 rounded-xl">
+            {getRiskIcon()}
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-center gap-2">
+            <span className={`px-3 py-1 text-xs font-bold rounded-full border ${getRiskBadgeStyle()}`}>
+              {stats.riskLevel} Risk
+            </span>
+            <span className="text-xs font-semibold text-slate-500">
+              Score: {stats.riskScore.toFixed(1)}/100
+            </span>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-slate-500 font-medium">
+          {stats.riskLevel === 'High' ? 'Score < 45 (Attention Required)' : 
+           stats.riskLevel === 'Medium' ? '45 ≤ Score < 70 (Moderate Risk)' : 'Score ≥ 70 (Low Academic Risk)'}
+        </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Cards
+export default Cards;

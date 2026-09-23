@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react'
-import { useSubject } from '../../../context/subjectContext'
-import { useAuth } from '../../../context/authContext'
-import { getStudentsBySemester, markAttendance } from '../../../services/facultyApi'
+import { useState, useEffect } from 'react';
+import { useSubject } from '../../../context/subjectContext';
+import { getStudentsBySemester, markAttendance } from '../../../services/facultyApi';
+import { Calendar, BookOpen, Users, Save, Loader2 } from 'lucide-react';
 
 const MarkAttendence = () => {
-  const { selectedSubject } = useSubject()
-  const { user } = useAuth()
+  const { selectedSubject } = useSubject();
   
   // Get today's date in local timezone (YYYY-MM-DD format)
   const getLocalDate = () => {
@@ -15,191 +14,221 @@ const MarkAttendence = () => {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
-  const today = getLocalDate()
+  const today = getLocalDate();
 
-  const [selectedDate, setSelectedDate] = useState(today)
-  const [students, setStudents] = useState([])
-  const [attendance, setAttendance] = useState({}) // { studentId: true/false }
-  const [loading, setLoading] = useState(false)
-  const [selectAll,setSelectAll] = useState(false)
-  
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [students, setStudents] = useState([]);
+  const [attendance, setAttendance] = useState({}); // { studentId: true/false }
+  const [loading, setLoading] = useState(false);
+  const [selectAll, setSelectAll] = useState(false);
 
   // Fetch students when subject changes
- useEffect(() => {
-  if (selectedSubject?.semester && selectedSubject?._id) {
-    fetchStudents()
-  }
-}, [selectedSubject?.semester, selectedSubject?._id])
+  useEffect(() => {
+    if (selectedSubject?.semester && selectedSubject?._id) {
+      fetchStudents();
+    }
+  }, [selectedSubject?.semester, selectedSubject?._id]);
 
   useEffect(() => {
-  if (!selectedSubject) {
-    setStudents([]);
-    setAttendance({});
-  }
-}, [selectedSubject]);
+    if (!selectedSubject) {
+      setStudents([]);
+      setAttendance({});
+    }
+  }, [selectedSubject]);
 
   const fetchStudents = async () => {
     try {
-      setLoading(true)
-      const data = await getStudentsBySemester(selectedSubject.semester)
-      setStudents(data.students)
+      setLoading(true);
+      const data = await getStudentsBySemester(selectedSubject.semester);
+      setStudents(data.students);
       
       // Initialize attendance object
-      const initialAttendance = {}
+      const initialAttendance = {};
       data.students.forEach(student => {
-        initialAttendance[student._id] = false
-      })
-      setAttendance(initialAttendance)
+        initialAttendance[student._id] = false;
+      });
+      setAttendance(initialAttendance);
     } catch (error) {
-      console.error("Error fetching students:", error)
+      console.error("Error fetching students:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSelectAll = () => {
-  const newValue = !selectAll;
-  setSelectAll(newValue);
+    const newValue = !selectAll;
+    setSelectAll(newValue);
 
-  const updated = {};
-  students.forEach((student) => {
-    updated[student._id] = newValue;
-  });
+    const updated = {};
+    students.forEach((student) => {
+      updated[student._id] = newValue;
+    });
 
-  setAttendance(updated);
-};
+    setAttendance(updated);
+  };
 
   const handleAttendanceToggle = (studentId) => {
     setAttendance(prev => ({
       ...prev,
       [studentId]: !prev[studentId]
-    }))
-  }
+    }));
+  };
 
   const handleSaveAttendance = async () => {
     try {
       if (!selectedSubject?._id) {
-        alert("Please select a subject")
-        return
+        alert("Please select a subject");
+        return;
       }
 
-       const hasAnySelected = Object.values(attendance).some(val => val === true);
+      const hasAnySelected = Object.values(attendance).some(val => val === true);
 
-    if (!hasAnySelected) {
-      alert("Please select at least one student");
-      return;
-    }
+      if (!hasAnySelected) {
+        alert("Please select at least one student");
+        return;
+      }
 
-      await markAttendance(selectedSubject._id, selectedSubject.semester, attendance)
-      alert("Attendance marked successfully for " + selectedDate)
+      await markAttendance(selectedSubject._id, selectedSubject.semester, attendance);
+      alert("Attendance marked successfully for " + selectedDate);
       
       // Reset
-      const initialAttendance = {}
+      const initialAttendance = {};
       students.forEach(student => {
-        initialAttendance[student._id] = false
-      })
-      setAttendance(initialAttendance)
+        initialAttendance[student._id] = false;
+      });
+      setAttendance(initialAttendance);
+      setSelectAll(false);
     } catch (error) {
-      console.error("Error marking attendance:", error)
-      alert("Failed to mark attendance")
+      console.error("Error marking attendance:", error);
+      alert("Failed to mark attendance");
     }
-  }
+  };
 
   return (
-    <div className="bg-gray-50 p-6 w-full">
-      <div className="bg-white p-6 rounded-2xl shadow-sm">
-        <h2 className="text-lg font-semibold">Mark Student Attendance</h2>
-        <p>
-          <h2 className="text-base font-semibold">
-            Semester {selectedSubject?.semester}
-          </h2>
+    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
+      {/* Section Header */}
+      <div className="border-b border-slate-100 pb-4">
+        <h2 className="text-lg font-bold text-slate-900 tracking-tight">Mark Student Attendance</h2>
+        {selectedSubject && (
+          <p className="text-xs text-slate-500 mt-1">
+            Semester <span className="font-semibold text-slate-700">{selectedSubject.semester}</span> • Subject: <span className="font-semibold text-slate-700">{selectedSubject.subjectName}</span>
+          </p>
+        )}
+      </div>
 
-          <h3 className="text-sm text-gray-500">
-            Subject: {selectedSubject?.subjectName}
-          </h3>
-        </p>
-
-        {/* SIDE BY SIDE */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {/* SUBJECT */}
-          <div>
-            <h2 className='text-base font-semibold'>Subject</h2>
-            <div className="mt-2 p-2 rounded-lg bg-gray-100">
-              {selectedSubject?.subjectName || "No subject selected"}
-            </div>
-          </div>
-
-          {/* DATE */}
-          <div>
-            <h2 className='text-base font-semibold'>Select the date</h2>
-            <input
-              type='date'
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="mt-2 w-full p-2 border rounded-lg bg-gray-100"
-            />
-          </div>
+      {/* Control Toolbar Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Subject Display Card */}
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
+          <label className="block text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+            <BookOpen size={14} className="text-slate-400" />
+            <span>Active Subject</span>
+          </label>
+          <p className="text-sm font-semibold text-slate-900">
+            {selectedSubject?.subjectName || "No subject selected"}
+          </p>
         </div>
 
-        {/* STUDENTS LIST */}
-        {!selectedSubject ? (
-  <p className="text-gray-500 mt-6">
-    Please select a subject to mark attendance
-  </p>
-) : (
-  <div>
-        <div>
-          <h2 className='text-base mt-10 font-semibold'>Students ({students.length}) 
+        {/* Date Selector */}
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
+          <label className="block text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+            <Calendar size={14} className="text-slate-400" />
+            <span>Attendance Date</span>
+          </label>
           <input
-            type="checkbox"
-            id='select all'
-            checked={selectAll}
-            onChange={handleSelectAll}
-            className="ml-5.5"
-          /> 
-          <label htmlFor='select all' className='ml-1.5'>Select all</label></h2>
-          
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-900 focus:border-blue-600 outline-none cursor-pointer"
+          />
+        </div>
+      </div>
+
+      {/* Students Checklist Container */}
+      {!selectedSubject ? (
+        <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl">
+          <BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+          <p className="text-xs font-semibold text-slate-600">Please select a subject above to mark attendance</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+            <div className="flex items-center gap-2">
+              <Users size={16} className="text-blue-600" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Student Roster ({students.length})
+              </h3>
+            </div>
+
+            {students.length > 0 && (
+              <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 hover:text-blue-600">
+                <input
+                  type="checkbox"
+                  id="select-all"
+                  checked={selectAll}
+                  onChange={handleSelectAll}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
+                />
+                <span>Select All Present</span>
+              </label>
+            )}
+          </div>
+
           {loading ? (
-            <p className="text-gray-500">Loading students...</p>
+            <div className="py-12 text-center text-slate-500 flex flex-col items-center justify-center space-y-2">
+              <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+              <p className="text-xs font-medium">Loading student list...</p>
+            </div>
           ) : students.length === 0 ? (
-            <p className="text-gray-500">No students in this semester</p>
+            <p className="text-xs text-slate-500 text-center py-8">No students found in this semester</p>
           ) : (
-            <div className="mt-4 space-y-2 max-h-96 overflow-y-auto border rounded-lg p-4">
-              {students.map((student) => (
-                <label key={student._id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded">
-                  <input
-                    type="checkbox"
-                    checked={attendance[student._id] || false}
-                    onChange={() => handleAttendanceToggle(student._id)}
-                    className="w-4 h-4"
-                  />
-                  <span className="flex-1">
-                    {student.fullName} ({student.enrollmentId})
-                  </span>
-                </label>
-              ))}
+            <div className="max-h-96 overflow-y-auto border border-slate-200 rounded-xl p-3 space-y-1.5 bg-slate-50/50">
+              {students.map((student) => {
+                const isChecked = attendance[student._id] || false;
+                return (
+                  <label
+                    key={student._id}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                      isChecked
+                        ? "bg-blue-50/70 border-blue-200 text-blue-950 font-medium"
+                        : "bg-white border-slate-100 hover:border-slate-200 text-slate-800"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => handleAttendanceToggle(student._id)}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
+                    />
+                    <div className="flex-1 flex items-center justify-between text-xs">
+                      <span className="font-semibold text-slate-900">{student.fullName}</span>
+                      <span className="font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">ID: {student.enrollmentId}</span>
+                    </div>
+                  </label>
+                );
+              })}
             </div>
           )}
-        
-        </div>
-        </div> 
-)}
-        
-        {/* SAVE BUTTON */}
-        <button
-          onClick={handleSaveAttendance}
-          disabled={
-  !selectedSubject?._id ||
-  students.length === 0 ||
-  !Object.values(attendance).some(val => val === true)
-}
-          className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
-        >
-          Save Attendance
-        </button>
-      </div>
-    </div>
-  )
-}
 
-export default MarkAttendence
+          {/* Submit Action Button */}
+          <div className="pt-2">
+            <button
+              onClick={handleSaveAttendance}
+              disabled={
+                !selectedSubject?._id ||
+                students.length === 0 ||
+                !Object.values(attendance).some(val => val === true)
+              }
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-blue-600/20 transition-all disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed cursor-pointer"
+            >
+              <Save size={16} />
+              <span>Save Attendance Record</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MarkAttendence;

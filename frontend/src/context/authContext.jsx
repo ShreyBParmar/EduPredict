@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
       semester: data.semester || "", // 🔥 IMPORTANT (store here)
       subjects: data.subjects || []
     };
+    
 
     setUser(userData);
 

@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useState } from "react";
 import Analytics from "./tabs/Analytics";
 import MarkAttendence from "./tabs/MarkAttendence";
 import UploadMarks from "./tabs/UploadMarks";
@@ -7,15 +7,20 @@ import { useSubject } from "../../context/subjectContext";
 import { useAuth } from "../../context/authContext";
 import { generateFacultyStudentReportPDF } from "../../utils/generatePdfReport";
 import axios from "axios";
+import { FileText, Loader2, BarChart2, CheckSquare, UploadCloud, AlertTriangle } from "lucide-react";
 
-const FacultyGraph = ({ subjects = [] }) => {
-  const userId=useId()
+const FacultyGraph = () => {
   const [active, setActive] = useState("Analytics");
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const { selectedSubject } = useSubject();
   const { user } = useAuth();
 
-  const tabs = ["Analytics", "Mark Attendance", "Upload Marks", "At-Risk Student"];
+  const tabs = [
+    { id: "Analytics", label: "Analytics Overview", icon: BarChart2 },
+    { id: "Mark Attendance", label: "Mark Attendance", icon: CheckSquare },
+    { id: "Upload Marks", label: "Upload Marks", icon: UploadCloud },
+    { id: "At-Risk Student", label: "At-Risk Students", icon: AlertTriangle }
+  ];
 
   const handleGeneratePDF = async () => {
     try {
@@ -41,83 +46,63 @@ const FacultyGraph = ({ subjects = [] }) => {
     } catch (err) {
       console.error('Error generating PDF:', err);
       alert('Failed to generate PDF. Please try again.');
-    } finally {
+    } fontally: {
       setGeneratingPdf(false);
     }
   };
 
-  // ---------------- DATA PROCESSING ----------------
-  const subjectNames = subjects.map(s => s.subject?.subjectName || "Sub");
-
-  const attendanceValues = subjects.map(s => s.attendance || 0);
-
-  const marksValues = subjects.map(
-    s => (s.internalMarks || 0) + (s.externalMarks || 0)
-  );
-
   return (
-    <div className="mt-5 ml-5 flex flex-col">
+    <div className="space-y-6">
+      {/* Action Toolbar & Segmented Navigation */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
+        {/* Segmented Control Tabs */}
+        <div className="bg-slate-200/70 p-1 rounded-xl flex flex-wrap items-center gap-1 w-full md:w-fit border border-slate-200">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = active === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActive(tab.id)}
+                className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+                  isActive
+                    ? "bg-white text-blue-600 shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
+                }`}
+              >
+                <Icon size={15} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
 
-      {/* PDF Download Button */}
-      <div className="flex justify-end mb-6 pr-5">
-      
-      
+        {/* Generate PDF Button */}
         <button
           onClick={handleGeneratePDF}
           disabled={generatingPdf || !selectedSubject}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-emerald-600/20 transition-all disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed cursor-pointer shrink-0"
         >
           {generatingPdf ? (
             <>
-              <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Generating...
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Generating Report...</span>
             </>
           ) : (
             <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              📄 Generate Subject Report
+              <FileText className="w-4 h-4" />
+              <span>Generate Subject Report</span>
             </>
           )}
         </button>
       </div>
 
-      {/* ---------------- TABS ---------------- */}
-      <div className="flex bg-gray-200 rounded-full p-1 mb-6 w-fit">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActive(tab)}
-            className={`px-4 py-2 text-sm font-medium rounded-full transition
-            ${
-              active === tab
-                ? "bg-white shadow text-black"
-                : "text-gray-600 hover:bg-white"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* ---------------- GRAPH SECTION ---------------- */}
-      <div className="w-full max-w-5xl">
-
-        {/* ANALYTICS TAB */}
-        {active === "Analytics" && (<Analytics />)}
-
-        {/* ATTENDANCE TAB */}
-        {active === "Mark Attendance" && (<MarkAttendence />)}
-
-        {/* MARKS TAB */}
-        {active === "Upload Marks" && (<UploadMarks />)}
-
-        {/* RISK TAB */}
-        {active === "At-Risk Student" && (<RiskStudent />)}
-
+      {/* Tab Content Display */}
+      <div className="w-full">
+        {active === "Analytics" && <Analytics />}
+        {active === "Mark Attendance" && <MarkAttendence />}
+        {active === "Upload Marks" && <UploadMarks />}
+        {active === "At-Risk Student" && <RiskStudent />}
       </div>
     </div>
   );

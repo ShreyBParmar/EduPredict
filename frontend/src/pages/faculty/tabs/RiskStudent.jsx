@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSubject } from "../../../context/subjectContext";
-import { useAuth } from "../../../context/authContext";
-import { getRiskColors, getChartColors } from "../../../utils/riskAnalysis";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { ShieldAlert, ShieldCheck, Shield, AlertTriangle, Filter, ArrowUpDown, Info, Loader2 } from "lucide-react";
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const orderMap = {
+  "High": 1,
+  "Medium": 2,
+  "Low": 3
+};
+
 const RiskStudent = () => {
   const { selectedSubject } = useSubject();
-  const { user } = useAuth();
 
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
@@ -48,12 +52,7 @@ const RiskStudent = () => {
           return b.totalMarks - a.totalMarks;
         case "risk":
         default:
-          const order = {
-  "High": 1,
-  "Medium": 2,
-  "Low": 3
-};
-          return order[a.riskLevel] - order[b.riskLevel];
+          return (orderMap[a.riskLevel] || 3) - (orderMap[b.riskLevel] || 3);
       }
     });
 
@@ -72,11 +71,11 @@ const RiskStudent = () => {
       if (res.data.success) {
         setStudents(res.data.students || []);
         setSummary({
-  High: res.data.summary?.High || 0,
-  Medium: res.data.summary?.Medium || 0,
-  Low: res.data.summary?.Low || 0,
-  total: res.data.summary?.total || 0
-});
+          High: res.data.summary?.High || 0,
+          Medium: res.data.summary?.Medium || 0,
+          Low: res.data.summary?.Low || 0,
+          total: res.data.summary?.total || 0
+        });
         console.log("✅ Students loaded:", res.data.students?.length);
       }
     } catch (err) {
@@ -89,28 +88,30 @@ const RiskStudent = () => {
 
   // Chart data
   const chartData = {
-  labels: ["High Risk", "Medium Risk", "Low Risk"],
-  datasets: [
-    {
-      data: [
-        summary?.High || 0,
-        summary?.Medium || 0,
-        summary?.Low || 0
-      ],
-      backgroundColor: ["#EF4444", "#F59E0B", "#22C55E"]
-    }
-  ]
-};
+    labels: ["High Risk", "Medium Risk", "Low Risk"],
+    datasets: [
+      {
+        data: [
+          summary?.High || 0,
+          summary?.Medium || 0,
+          summary?.Low || 0
+        ],
+        backgroundColor: ["#ef4444", "#f59e0b", "#10b981"]
+      }
+    ]
+  };
 
   const chartOptions = {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
+    cutout: "65%",
     plugins: {
       legend: {
         position: "bottom",
         labels: {
           padding: 15,
-          font: { size: 12, weight: "bold" },
+          font: { size: 12, weight: "600" },
+          color: "#475569"
         },
       },
     },
@@ -119,10 +120,10 @@ const RiskStudent = () => {
   // If no subject selected
   if (!selectedSubject) {
     return (
-      <div className="p-6 bg-gray-50">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800">
-          ⚠️ Select a subject first to view at-risk students
-        </div>
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-8 text-center text-slate-500 shadow-xs">
+        <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto mb-2" />
+        <p className="text-sm font-semibold text-slate-800">Select a Subject</p>
+        <p className="text-xs text-slate-500 mt-1">Please select a subject first to view at-risk student analysis.</p>
       </div>
     );
   }
@@ -130,13 +131,9 @@ const RiskStudent = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="p-6 bg-gray-50">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
-            <p className="text-gray-600">Loading risk analysis...</p>
-          </div>
-        </div>
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center text-slate-500 shadow-xs flex flex-col items-center justify-center space-y-3">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <p className="text-sm font-medium text-slate-600">Performing risk calculation analysis...</p>
       </div>
     );
   }
@@ -144,92 +141,112 @@ const RiskStudent = () => {
   // Error state
   if (error) {
     return (
-      <div className="p-6 bg-gray-50">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
-          ❌ Error: {error}
-        </div>
+      <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-rose-800 space-y-1">
+        <p className="font-semibold text-sm">Error Loading Risk Analysis</p>
+        <p className="text-xs text-rose-700">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-gray-50 space-y-6">
-      {/* HEADER */}
+    <div className="space-y-6">
+      {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          🚨 Student Risk Analysis
+        <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <ShieldAlert className="w-5 h-5 text-rose-600" />
+          <span>Student Risk Analysis</span>
         </h2>
-        <p className="text-gray-600">
-          Subject: <span className="font-semibold">{selectedSubject?.subjectName}</span>
+        <p className="text-xs text-slate-500 mt-0.5">
+          Subject: <span className="font-semibold text-slate-700">{selectedSubject?.subjectName}</span>
         </p>
       </div>
 
-      {/* SUMMARY CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-red-500">
-          <div className="text-sm text-gray-600">High Risk</div>
-          <div className="text-2xl font-bold text-red-600">{summary.High || 0}</div>
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-xl border border-slate-200/80 border-l-4 border-l-rose-500 shadow-xs">
+          <div className="flex justify-between items-center text-xs font-semibold text-slate-500">
+            <span>High Risk</span>
+            <ShieldAlert size={16} className="text-rose-500" />
+          </div>
+          <div className="text-2xl font-bold text-rose-600 mt-1">{summary.High || 0}</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-yellow-500">
-          <div className="text-sm text-gray-600">Medium Risk</div>
-          <div className="text-2xl font-bold text-yellow-600">{summary.Medium || 0}</div>
+
+        <div className="bg-white p-4 rounded-xl border border-slate-200/80 border-l-4 border-l-amber-500 shadow-xs">
+          <div className="flex justify-between items-center text-xs font-semibold text-slate-500">
+            <span>Medium Risk</span>
+            <Shield size={16} className="text-amber-500" />
+          </div>
+          <div className="text-2xl font-bold text-amber-600 mt-1">{summary.Medium || 0}</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500">
-          <div className="text-sm text-gray-600">Low Risk</div>
-          <div className="text-2xl font-bold text-green-600">{summary.Low || 0}</div>
+
+        <div className="bg-white p-4 rounded-xl border border-slate-200/80 border-l-4 border-l-emerald-500 shadow-xs">
+          <div className="flex justify-between items-center text-xs font-semibold text-slate-500">
+            <span>Low Risk</span>
+            <ShieldCheck size={16} className="text-emerald-500" />
+          </div>
+          <div className="text-2xl font-bold text-emerald-600 mt-1">{summary.Low || 0}</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
-          <div className="text-sm text-gray-600">Total Students</div>
-          <div className="text-2xl font-bold text-blue-600">{summary.total}</div>
+
+        <div className="bg-white p-4 rounded-xl border border-slate-200/80 border-l-4 border-l-blue-500 shadow-xs">
+          <div className="flex justify-between items-center text-xs font-semibold text-slate-500">
+            <span>Total Enrolled</span>
+            <Info size={16} className="text-blue-500" />
+          </div>
+          <div className="text-2xl font-bold text-blue-600 mt-1">{summary.total}</div>
         </div>
       </div>
 
-      {/* CHART & CONTROLS */}
+      {/* Chart & Controls Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* CHART */}
-        <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">Risk Distribution</h3>
-          <div className="flex justify-center">
+        {/* Doughnut Chart Card */}
+        <div className="lg:col-span-1 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+          <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Risk Level Distribution</h3>
+          <div className="h-56 flex items-center justify-center">
             {(summary?.High + summary?.Medium + summary?.Low) === 0 ? (
-              <div className="text-gray-400 text-center py-12">
-                No data available
+              <div className="text-slate-400 text-xs font-medium text-center py-8">
+                No evaluation data available
               </div>
             ) : (
-              <Doughnut data={chartData} options={chartOptions} height={250} />
+              <Doughnut data={chartData} options={chartOptions} />
             )}
           </div>
         </div>
 
-        {/* CONTROLS */}
+        {/* Controls Panel */}
         <div className="lg:col-span-2 space-y-4">
-          {/* SORT & FILTER */}
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Filters & Sort</h3>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+              <Filter size={14} className="text-blue-600" />
+              <span>Filters & Sorting</span>
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Sort By
+                <label className="block text-xs font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                  <ArrowUpDown size={12} className="text-slate-400" />
+                  <span>Sort Roster By</span>
                 </label>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full p-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-900 focus:bg-white focus:border-blue-600 outline-none cursor-pointer"
                 >
-                  <option value="risk">Risk Level</option>
-                  <option value="name">Student Name</option>
-                  <option value="attendance">Attendance ↓</option>
-                  <option value="marks">Marks ↓</option>
+                  <option value="risk">Risk Level Severity</option>
+                  <option value="name">Student Name (A-Z)</option>
+                  <option value="attendance">Highest Attendance ↓</option>
+                  <option value="marks">Highest Marks ↓</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Filter By Risk
+                <label className="block text-xs font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                  <Filter size={12} className="text-slate-400" />
+                  <span>Filter Severity</span>
                 </label>
                 <select
                   value={filterBy}
                   onChange={(e) => setFilterBy(e.target.value)}
-                  className="w-full p-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-900 focus:bg-white focus:border-blue-600 outline-none cursor-pointer"
                 >
                   <option value="all">All Students</option>
                   <option value="High">High Risk Only</option>
@@ -240,88 +257,69 @@ const RiskStudent = () => {
             </div>
           </div>
 
-          {/* INFO BOX */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
-            💡 <strong>Risk Criteria:</strong> Score = (TotalMarks × 0.7) + (Attendance × 0.3) | High Risk: Score &lt; 45 | Medium Risk: 45 ≤ Score &lt; 70 | Low Risk: Score ≥ 70
+          {/* Risk Formula Criteria Banner */}
+          <div className="bg-blue-50/70 border border-blue-100 rounded-2xl p-4 text-xs text-blue-900 space-y-1">
+            <div className="font-bold flex items-center gap-1.5 text-blue-950">
+              <Info size={14} className="text-blue-600" />
+              <span>Risk Evaluation Formula:</span>
+            </div>
+            <p className="text-[11px] text-blue-800 leading-relaxed pl-5">
+              Score = (Total Marks × 0.7) + (Attendance × 0.3) <br />
+              <strong className="text-rose-700">High Risk:</strong> Score &lt; 45 | <strong className="text-amber-700">Medium Risk:</strong> 45 ≤ Score &lt; 70 | <strong className="text-emerald-700">Low Risk:</strong> Score ≥ 70
+            </p>
           </div>
         </div>
       </div>
 
-      {/* TABLE */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      {/* Roster Risk Table */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           {filteredStudents.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-              {students.length === 0
-                ? "No student data available. Upload marks first."
-                : `No students match the filter "${filterBy}"`}
+            <div className="p-8 text-center text-slate-500">
+              <p className="text-xs font-semibold">
+                {students.length === 0
+                  ? "No student data available. Please upload marks first."
+                  : `No students match the filter "${filterBy}"`}
+              </p>
             </div>
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-100 border-b">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                    Name
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                    Enrollment ID
-                  </th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                    Attendance %
-                  </th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                    Marks (Internal + External + Practical)
-                  </th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                    Total Marks (Used for Risk Calculation)
-                  </th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                    Risk Level
-                  </th>
+                  <th className="px-5 py-3.5">Name</th>
+                  <th className="px-5 py-3.5">Enrollment ID</th>
+                  <th className="px-5 py-3.5 text-center">Attendance %</th>
+                  <th className="px-5 py-3.5 text-center">Marks Breakdown (I / E / P)</th>
+                  <th className="px-5 py-3.5 text-center">Total Marks</th>
+                  <th className="px-5 py-3.5 text-center">Risk Level</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-slate-100">
                 {filteredStudents.map((student) => {
-                  const colors = getRiskColors[student.riskLevel];
+                  let badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                  if (student.riskLevel === "High") badgeColor = "bg-rose-50 text-rose-700 border-rose-200";
+                  if (student.riskLevel === "Medium") badgeColor = "bg-amber-50 text-amber-700 border-amber-200";
+
                   return (
-                    <tr
-                      key={student._id}
-                      className={`${colors.bg} hover:bg-gray-50 transition`}
-                    >
-                      <td className="px-4 py-3 text-sm font-medium text-gray-800">
-                        {student.name}
+                    <tr key={student._id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-5 py-4 font-semibold text-slate-900">{student.name}</td>
+                      <td className="px-5 py-4 font-mono text-xs text-slate-500">{student.enrollmentId || "N/A"}</td>
+                      <td className="px-5 py-4 text-center font-semibold text-blue-600">
+                        {student.attendance}%
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {student.enrollmentId || "N/A"}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
-                          {student.attendance}%
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center text-sm text-gray-700">
-                        <div className="flex justify-center gap-2">
-                          <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
-                            I: {student.internalMarks}
-                          </span>
-                          <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded text-xs">
-                            E: {student.externalMarks}
-                          </span>
-                          <span className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs">
-                            P: {student.Practical}
-                          </span>
+                      <td className="px-5 py-4 text-center">
+                        <div className="flex justify-center items-center gap-1.5 text-xs font-medium">
+                          <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded" title="Internal Marks">I: {student.internalMarks}</span>
+                          <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded" title="External Marks">E: {student.externalMarks}</span>
+                          <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded" title="Practical Marks">P: {student.Practical}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="inline-block px-3 py-1 bg-gray-200 text-gray-800 rounded-full text-sm font-bold">
-                          {student.totalMarks}
-                        </span>
+                      <td className="px-5 py-4 text-center font-bold text-slate-900">
+                        {student.totalMarks}
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-block px-4 py-1 rounded-full text-sm font-bold text-white ${colors.badge}`}
-                        >
-                          {student.riskLevel}
+                      <td className="px-5 py-4 text-center">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${badgeColor}`}>
+                          {student.riskLevel} Risk
                         </span>
                       </td>
                     </tr>
@@ -333,10 +331,10 @@ const RiskStudent = () => {
         </div>
       </div>
 
-      {/* FOOTER INFO */}
+      {/* Footer Count */}
       {filteredStudents.length > 0 && (
-        <div className="text-sm text-gray-600 text-center">
-          Showing {filteredStudents.length} of {summary.total} students
+        <div className="text-xs text-slate-500 text-center font-medium">
+          Showing {filteredStudents.length} of {summary.total} evaluated students
         </div>
       )}
     </div>
