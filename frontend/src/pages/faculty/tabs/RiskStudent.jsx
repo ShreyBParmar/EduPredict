@@ -3,7 +3,8 @@ import axios from "axios";
 import { useSubject } from "../../../context/subjectContext";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { ShieldAlert, ShieldCheck, Shield, AlertTriangle, Filter, ArrowUpDown, Info, Loader2 } from "lucide-react";
+import { ShieldAlert, ShieldCheck, Shield, AlertTriangle, Filter, ArrowUpDown, Info } from "lucide-react";
+import { Skeleton, SkeletonKPICards, SkeletonTable } from "../../../components/ui/Skeleton";
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -131,9 +132,31 @@ const RiskStudent = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center text-slate-500 shadow-xs flex flex-col items-center justify-center space-y-3">
-        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-        <p className="text-sm font-medium text-slate-600">Performing risk calculation analysis...</p>
+      <div className="space-y-6">
+        <div className="space-y-1">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-3.5 w-36" />
+        </div>
+        <SkeletonKPICards count={4} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 space-y-3">
+            <Skeleton className="h-4 w-36" />
+            <div className="h-56 flex items-center justify-center">
+              <Skeleton className="h-40 w-40 rounded-full" />
+            </div>
+          </div>
+          <div className="lg:col-span-2 space-y-4">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 space-y-3">
+              <Skeleton className="h-4 w-32" />
+              <div className="grid grid-cols-2 gap-3">
+                <Skeleton className="h-9 w-full rounded-xl" />
+                <Skeleton className="h-9 w-full rounded-xl" />
+              </div>
+            </div>
+            <Skeleton className="h-16 w-full rounded-2xl" />
+          </div>
+        </div>
+        <SkeletonTable rows={5} cols={6} />
       </div>
     );
   }

@@ -6,6 +6,7 @@ import { getStudentDashboard } from '../../services/studentApi';
 import { generateAcademicReportPDF } from '../../utils/generatePdfReport';
 import { useAuth } from '../../context/authContext';
 import { FileText, Loader2, AlertCircle, Inbox } from 'lucide-react';
+import { Skeleton, SkeletonKPICards, SkeletonTable } from '../../components/ui/Skeleton';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -54,12 +55,31 @@ const StudentDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-50 text-slate-900 pb-12">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 flex flex-col items-center justify-center space-y-3">
-          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-          <p className="text-sm font-medium text-slate-600">Loading student analytics...</p>
-        </div>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+          {/* Skeleton Action Bar */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
+            <div className="space-y-1.5">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-3.5 w-72" />
+            </div>
+            <Skeleton className="h-9 w-44 rounded-xl" />
+          </div>
+
+          {/* Skeleton KPI Cards */}
+          <SkeletonKPICards count={4} />
+
+          {/* Skeleton Tabs & Content */}
+          <div className="space-y-4 pt-2">
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-28 rounded-lg" />
+              <Skeleton className="h-9 w-32 rounded-lg" />
+              <Skeleton className="h-9 w-28 rounded-lg" />
+            </div>
+            <SkeletonTable rows={4} cols={5} />
+          </div>
+        </main>
       </div>
     );
   }

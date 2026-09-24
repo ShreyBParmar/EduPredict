@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSubject } from '../../../context/subjectContext';
 import { getStudentsBySemester, updateMarks } from '../../../services/facultyApi';
-import { BookOpen, Award, UploadCloud, Loader2 } from 'lucide-react';
+import { BookOpen, Award, UploadCloud } from 'lucide-react';
+import { SkeletonTable } from '../../../components/ui/Skeleton';
 
 const UploadMarks = () => {
   const { selectedSubject } = useSubject();
@@ -166,10 +167,7 @@ const UploadMarks = () => {
       ) : (
         <div className="space-y-4">
           {loading ? (
-            <div className="py-12 text-center text-slate-500 flex flex-col items-center justify-center space-y-2">
-              <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-              <p className="text-xs font-medium">Loading student list...</p>
-            </div>
+            <SkeletonTable rows={5} cols={3} />
           ) : students.length === 0 ? (
             <p className="text-xs text-slate-500 text-center py-8">No students in this semester</p>
           ) : (

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSubject } from '../../../context/subjectContext';
 import { getStudentsBySemester, markAttendance } from '../../../services/facultyApi';
-import { Calendar, BookOpen, Users, Save, Loader2 } from 'lucide-react';
+import { Calendar, BookOpen, Users, Save } from 'lucide-react';
+import { SkeletonChecklist } from '../../../components/ui/Skeleton';
 
 const MarkAttendence = () => {
   const { selectedSubject } = useSubject();
@@ -160,7 +161,7 @@ const MarkAttendence = () => {
               </h3>
             </div>
 
-            {students.length > 0 && (
+            {students.length > 0 && !loading && (
               <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 hover:text-blue-600">
                 <input
                   type="checkbox"
@@ -175,10 +176,7 @@ const MarkAttendence = () => {
           </div>
 
           {loading ? (
-            <div className="py-12 text-center text-slate-500 flex flex-col items-center justify-center space-y-2">
-              <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-              <p className="text-xs font-medium">Loading student list...</p>
-            </div>
+            <SkeletonChecklist count={5} />
           ) : students.length === 0 ? (
             <p className="text-xs text-slate-500 text-center py-8">No students found in this semester</p>
           ) : (

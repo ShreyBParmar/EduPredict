@@ -17,7 +17,8 @@ import { Bar, Doughnut } from "react-chartjs-2";
 import { useSubject } from '../../../context/subjectContext';
 import { useAuth } from '../../../context/authContext';
 import { getSubjectMarksData } from '../../../services/facultyApi';
-import { RefreshCw, Users, BookOpen, Award, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { RefreshCw, BookOpen } from 'lucide-react';
+import { Skeleton, SkeletonChartsGrid, SkeletonTable } from '../../../components/ui/Skeleton';
 
 ChartJS.register(
   CategoryScale,
@@ -155,9 +156,21 @@ const Analytics = () => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center text-slate-500 shadow-xs flex flex-col items-center justify-center space-y-3">
-        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-        <p className="text-sm font-medium text-slate-600">Fetching class analytics data...</p>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-8 w-28 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="bg-white p-4 rounded-xl border border-slate-200/80 space-y-2">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-7 w-12" />
+            </div>
+          ))}
+        </div>
+        <SkeletonChartsGrid />
+        <SkeletonTable rows={4} cols={6} />
       </div>
     );
   }
