@@ -25,7 +25,7 @@ const Graph = ({ subjects }) => {
   return (
     <div className="space-y-6">
       {/* Segmented Tabs Control */}
-      <div className="bg-slate-200/70 p-1 rounded-xl flex items-center gap-1 w-full sm:w-fit border border-slate-200">
+      <div className="bg-slate-200/70 p-1 rounded-xl flex flex-wrap sm:flex-nowrap items-center gap-1 w-full sm:w-fit border border-slate-200 overflow-x-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = active === tab.id;
@@ -33,13 +33,13 @@ const Graph = ({ subjects }) => {
             <button
               key={tab.id}
               onClick={() => setActive(tab.id)}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer whitespace-nowrap ${
                 isActive
                   ? "bg-white text-blue-600 shadow-xs"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
               }`}
             >
-              <Icon size={15} />
+              <Icon size={15} className="shrink-0" />
               <span>{tab.label}</span>
             </button>
           );

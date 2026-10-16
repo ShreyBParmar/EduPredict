@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { Eye, EyeOff, GraduationCap, Loader2, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, GraduationCap, Loader2, Mail, Lock, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/authContext.jsx';
+import { useToast } from '../context/toastContext.jsx';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -13,12 +16,35 @@ const Login = () => {
 
   const auth = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
+
+  const validateEmail = (val) => {
+    if (!val) {
+      setEmailError("Email address is required");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(val)) {
+      setEmailError("Please enter a valid email address (e.g. name@domain.com)");
+      return false;
+    }
+    setEmailError("");
+    return true;
+  };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+
+    if (name === "email") {
+      if (emailError) validateEmail(value);
+    }
+    if (errorMessage) {
+      setErrorMessage("");
+    }
   };
 
   const handleClick = async (e) => {
@@ -28,6 +54,18 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
+
+    const isEmailValid = validateEmail(formData.email);
+    if (!isEmailValid) {
+      return;
+    }
+
+    if (!formData.password) {
+      setErrorMessage("Please enter your password");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -43,10 +81,14 @@ const Login = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Login failed");
+        const errorMsg = data.message || "Invalid credentials. Please verify your email and password.";
+        setErrorMessage(errorMsg);
+        toast.error(errorMsg);
         setLoading(false);
         return;
       }
+
+      toast.success("Login successful! Welcome back.");
 
       // save auth state via context (includes token, role, fullName)
       auth.loginAction({
@@ -72,7 +114,9 @@ const Login = () => {
       setLoading(false);
     } catch (error) {
       console.error(error);
-      alert("Login failed");
+      const networkError = "Unable to connect to the authentication server. Please check your network.";
+      setErrorMessage(networkError);
+      toast.error(networkError);
       setLoading(false);
     }
   };
@@ -89,8 +133,16 @@ const Login = () => {
           <p className="text-sm text-slate-500">Sign in to your EduPredict portal</p>
         </div>
 
+        {/* Login Error Alert Banner */}
+        {errorMessage && (
+          <div className="bg-rose-50 border border-rose-200 text-rose-800 p-3.5 rounded-xl flex items-start gap-2.5 text-xs font-semibold">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <span className="leading-relaxed">{errorMessage}</span>
+          </div>
+        )}
+
         {/* Form Inputs */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               Email Address
@@ -104,11 +156,22 @@ const Login = () => {
                 name="email"
                 placeholder="name@institution.edu"
                 value={formData.email}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all outline-none"
+                onBlur={(e) => validateEmail(e.target.value)}
+                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white transition-all outline-none ${
+                  emailError
+                    ? "border-rose-400 focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                    : "border-slate-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                }`}
                 onChange={handleChange}
                 required
               />
             </div>
+            {emailError && (
+              <p className="text-[11px] text-rose-600 mt-1.5 flex items-center gap-1 font-semibold">
+                <AlertCircle size={12} className="shrink-0" />
+                <span>{emailError}</span>
+              </p>
+            )}
           </div>
 
           <div>

@@ -37,19 +37,19 @@ const FacultyHeader = () => {
             <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-bold text-base flex items-center justify-center shadow-xs">
               {getInitial()}
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-semibold text-slate-900 leading-none">
+                <h2 className="text-sm font-semibold text-slate-900 leading-none truncate max-w-[120px] sm:max-w-xs">
                   {user?.fullName || 'Faculty Member'}
                 </h2>
-                <span className="px-2 py-0.5 text-[10px] font-bold bg-purple-50 text-purple-700 rounded-full border border-purple-100 uppercase">
+                <span className="px-2 py-0.5 text-[10px] font-bold bg-purple-50 text-purple-700 rounded-full border border-purple-100 uppercase shrink-0">
                   Faculty
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+              <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 truncate">
                 <span>{user?.facultyId ? `ID: ${user.facultyId}` : 'Faculty Portal'}</span>
-                <span>•</span>
-                <span className="text-slate-600 font-medium">Computer Science</span>
+                <span className="hidden xs:inline">•</span>
+                <span className="text-slate-600 font-medium hidden xs:inline">Computer Science</span>
               </p>
             </div>
           </div>

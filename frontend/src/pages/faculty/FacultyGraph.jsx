@@ -46,7 +46,7 @@ const FacultyGraph = () => {
     } catch (err) {
       console.error('Error generating PDF:', err);
       alert('Failed to generate PDF. Please try again.');
-    } fontally: {
+    } finally {
       setGeneratingPdf(false);
     }
   };

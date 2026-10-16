@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, GraduationCap, Loader2, Plus, Trash2, BookOpen, User, Mail, Lock, Hash } from "lucide-react";
+import { Eye, EyeOff, GraduationCap, Loader2, Plus, Trash2, BookOpen, User, Mail, Lock, Hash, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useToast } from "../../context/toastContext";
 
 const FacultySignupForm = () => {
   const semesters = [1, 2, 3, 4, 5, 6, 7];
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -14,15 +16,62 @@ const FacultySignupForm = () => {
     facultyId: ""
   });
 
+  const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [teachingData, setTeachingData] = useState([]);
 
+  const validateField = (name, value) => {
+    let errorMsg = "";
+    if (name === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!value) {
+        errorMsg = "Email address is required";
+      } else if (!emailRegex.test(value)) {
+        errorMsg = "Please enter a valid email address";
+      }
+    } else if (name === "password") {
+      if (!value) {
+        errorMsg = "Password is required";
+      } else if (value.length <= 6) {
+        errorMsg = "Password must be at least 7 characters";
+      }
+    } else if (name === "confirmPassword") {
+      if (!value) {
+        errorMsg = "Please confirm your password";
+      } else if (value !== formData.password) {
+        errorMsg = "Passwords do not match";
+      }
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: errorMsg
+    }));
+    return !errorMsg;
+  };
+
   // 🔹 Input change
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (errors[name]) {
+      validateField(name, value);
+    }
+    if (name === "password" && formData.confirmPassword) {
+      if (formData.confirmPassword !== value) {
+        setErrors((prev) => ({ ...prev, confirmPassword: "Passwords do not match" }));
+      } else {
+        setErrors((prev) => ({ ...prev, confirmPassword: "" }));
+      }
+    }
+    if (serverError) setServerError("");
   };
 
   // 🔹 Add semester block
@@ -31,6 +80,9 @@ const FacultySignupForm = () => {
       ...teachingData,
       { semester: "", subjects: [], availableSubjects: [] }
     ]);
+    if (errors.teachingData) {
+      setErrors((prev) => ({ ...prev, teachingData: "" }));
+    }
   };
 
   // 🔹 Remove semester block
@@ -58,8 +110,12 @@ const FacultySignupForm = () => {
       updated[index].subjects = [];
 
       setTeachingData(updated);
+      if (errors.teachingData) {
+        setErrors((prev) => ({ ...prev, teachingData: "" }));
+      }
     } catch (err) {
       console.error("FETCH ERROR:", err.message);
+      toast.error("Failed to load subjects for this semester");
     }
   };
 
@@ -75,33 +131,62 @@ const FacultySignupForm = () => {
     }
 
     setTeachingData(updated);
+    if (errors.teachingData) {
+      setErrors((prev) => ({ ...prev, teachingData: "" }));
+    }
   };
 
   // 🔹 Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setServerError("");
+    setSuccessMessage("");
 
-    // validations
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
-      setLoading(false);
-      return;
+    // Validations
+    const newErrors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
+    if (!formData.email) {
+      newErrors.email = "Email address is required";
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
     }
+
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length <= 6) {
+      newErrors.password = "Password must be at least 7 characters";
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Confirm password is required";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    if (!formData.facultyId.trim()) newErrors.facultyId = "Faculty ID is required";
 
     if (teachingData.length === 0) {
-      alert("Add at least one semester");
-      setLoading(false);
+      newErrors.teachingData = "Please add at least one semester assignment";
+    } else {
+      for (const item of teachingData) {
+        if (!item.semester || item.subjects.length === 0) {
+          newErrors.teachingData = "Each semester block must have a semester selected and at least one subject assigned";
+          break;
+        }
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      if (newErrors.teachingData) {
+        toast.warning(newErrors.teachingData);
+      }
       return;
     }
 
-    for (const item of teachingData) {
-      if (!item.semester || item.subjects.length === 0) {
-        alert("Each semester must have subjects");
-        setLoading(false);
-        return;
-      }
-    }
+    setLoading(true);
 
     const payload = {
       ...formData,
@@ -121,18 +206,28 @@ const FacultySignupForm = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message);
+        const msg = data.message || "Faculty registration failed.";
+        setServerError(msg);
+        if (msg.toLowerCase().includes("email") || msg.toLowerCase().includes("already")) {
+          setErrors((prev) => ({ ...prev, email: msg }));
+        }
+        toast.error(msg);
         setLoading(false);
         return;
       }
 
-      alert("Faculty Registered Successfully");
+      setSuccessMessage("Faculty registered successfully! Redirecting to login...");
+      toast.success("Account created successfully!");
       setLoading(false);
-      navigate("/login");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
 
     } catch (err) {
       console.error(err);
-      alert("Signup failed");
+      const networkError = "Unable to connect to the server. Please try again later.";
+      setServerError(networkError);
+      toast.error(networkError);
       setLoading(false);
     }
   };
@@ -149,7 +244,23 @@ const FacultySignupForm = () => {
           <p className="text-sm text-slate-500">Register to manage subjects and evaluate student performance</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Server Error Alert Banner */}
+        {serverError && (
+          <div className="bg-rose-50 border border-rose-200 text-rose-800 p-3.5 rounded-xl flex items-start gap-2.5 text-xs font-semibold animate-in fade-in">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <span className="leading-relaxed">{serverError}</span>
+          </div>
+        )}
+
+        {/* Success Alert Banner */}
+        {successMessage && (
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3.5 rounded-xl flex items-start gap-2.5 text-xs font-semibold animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <span className="leading-relaxed">{successMessage}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Basic Info Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -164,11 +275,22 @@ const FacultySignupForm = () => {
                   name="fullName"
                   type="text"
                   placeholder="Prof. Jane Smith"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all outline-none"
+                  value={formData.fullName}
+                  className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white transition-all outline-none ${
+                    errors.fullName
+                      ? "border-rose-400 focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                      : "border-slate-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  }`}
                   onChange={handleChange}
                   required
                 />
               </div>
+              {errors.fullName && (
+                <p className="text-[11px] text-rose-600 mt-1 flex items-center gap-1 font-semibold">
+                  <AlertCircle size={12} className="shrink-0" />
+                  <span>{errors.fullName}</span>
+                </p>
+              )}
             </div>
 
             <div>
@@ -183,11 +305,23 @@ const FacultySignupForm = () => {
                   name="email"
                   type="email"
                   placeholder="faculty@university.edu"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all outline-none"
+                  value={formData.email}
+                  onBlur={(e) => validateField("email", e.target.value)}
+                  className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white transition-all outline-none ${
+                    errors.email
+                      ? "border-rose-400 focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                      : "border-slate-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  }`}
                   onChange={handleChange}
                   required
                 />
               </div>
+              {errors.email && (
+                <p className="text-[11px] text-rose-600 mt-1 flex items-center gap-1 font-semibold">
+                  <AlertCircle size={12} className="shrink-0" />
+                  <span>{errors.email}</span>
+                </p>
+              )}
             </div>
           </div>
 
@@ -202,7 +336,13 @@ const FacultySignupForm = () => {
                   type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="••••••••"
-                  className="w-full pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all outline-none"
+                  value={formData.password}
+                  onBlur={(e) => validateField("password", e.target.value)}
+                  className={`w-full pl-3 pr-8 py-2.5 bg-slate-50 border rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white transition-all outline-none ${
+                    errors.password
+                      ? "border-rose-400 focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                      : "border-slate-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  }`}
                   onChange={handleChange}
                   required
                 />
@@ -214,6 +354,12 @@ const FacultySignupForm = () => {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {errors.password && (
+                <p className="text-[11px] text-rose-600 mt-1 flex items-center gap-1 font-semibold">
+                  <AlertCircle size={12} className="shrink-0" />
+                  <span>{errors.password}</span>
+                </p>
+              )}
             </div>
 
             <div>
@@ -225,7 +371,13 @@ const FacultySignupForm = () => {
                   type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
                   placeholder="••••••••"
-                  className="w-full pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all outline-none"
+                  value={formData.confirmPassword}
+                  onBlur={(e) => validateField("confirmPassword", e.target.value)}
+                  className={`w-full pl-3 pr-8 py-2.5 bg-slate-50 border rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white transition-all outline-none ${
+                    errors.confirmPassword
+                      ? "border-rose-400 focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                      : "border-slate-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  }`}
                   onChange={handleChange}
                   required
                 />
@@ -237,6 +389,12 @@ const FacultySignupForm = () => {
                   {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {errors.confirmPassword && (
+                <p className="text-[11px] text-rose-600 mt-1 flex items-center gap-1 font-semibold">
+                  <AlertCircle size={12} className="shrink-0" />
+                  <span>{errors.confirmPassword}</span>
+                </p>
+              )}
             </div>
           </div>
 
@@ -253,11 +411,22 @@ const FacultySignupForm = () => {
                 type="text"
                 name="facultyId"
                 placeholder="e.g. FAC-2024-09"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all outline-none"
+                value={formData.facultyId}
+                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:bg-white transition-all outline-none ${
+                  errors.facultyId
+                    ? "border-rose-400 focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                    : "border-slate-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                }`}
                 onChange={handleChange}
                 required
               />
             </div>
+            {errors.facultyId && (
+              <p className="text-[11px] text-rose-600 mt-1 flex items-center gap-1 font-semibold">
+                <AlertCircle size={12} className="shrink-0" />
+                <span>{errors.facultyId}</span>
+              </p>
+            )}
           </div>
 
           {/* Teaching Assignment Section Header */}
@@ -274,6 +443,13 @@ const FacultySignupForm = () => {
               <Plus size={14} /> Add Semester
             </button>
           </div>
+
+          {errors.teachingData && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 p-2.5 rounded-xl flex items-center gap-2 text-xs font-semibold">
+              <AlertCircle size={14} className="text-amber-600 shrink-0" />
+              <span>{errors.teachingData}</span>
+            </div>
+          )}
 
           {/* Dynamic Semester Blocks */}
           <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
