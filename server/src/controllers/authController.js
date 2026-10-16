@@ -276,15 +276,18 @@ export const forgotPassword=async(req,res)=>{
 
     await user.save();
 
-    // Create reset link (send via email in production)
-    const resetLink = `${process.env.VITE_APP_URL}/reset-password/${resetToken}`;
+    // Create reset link (send via email in production or return for direct access)
+    const frontendUrl = process.env.FRONTEND_URL || process.env.VITE_APP_URL || "http://localhost:5173";
+    const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
 
-    // For development (temporary)
+    // For development / logging
     console.log("Password Reset Link:", resetLink);
 
     return res.status(200).json({
       success: true,
-      message: "Password reset link sent"
+      message: "Password reset link generated and sent successfully",
+      resetLink,
+      token: resetToken
     });
 
   } catch (error) {
