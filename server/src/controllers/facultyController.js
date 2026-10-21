@@ -1,16 +1,18 @@
 import Faculty from "../models/Faculty.js";
 import StudentSubject from "../models/StudentSubject.js";
 import Student from "../models/Student.js";
+import FacultySubject from "../models/FacultySubjects.js";
+import Attendance from "../models/Attendance.js";
 
 // GET subjects for faculty + semester
-export const getFacultySubjects= async (req, res) => {
+export const getFacultySubjects = async (req, res) => {
   try {
     const { facultyId, semester } = req.query;
 
     const data = await FacultySubject.find({
       faculty: facultyId,
       semester
-    }).populate("subject","subjectName");
+    }).populate("subject", "subjectName");
 
     const subjects = data.map(item => item.subject);
 
@@ -37,15 +39,77 @@ export const getStudentsBySemester = async (req, res) => {
   }
 };
 
-// Mark attendance for students in a subject
+// Check if attendance is already marked and locked for a given subject, semester, and date
+export const getAttendanceStatus = async (req, res) => {
+  try {
+    const { subjectId, semester, date } = req.query;
+
+    if (!subjectId || !semester || !date) {
+      return res.status(400).json({ message: "subjectId, semester, and date are required" });
+    }
+
+    const attendanceRecord = await Attendance.findOne({
+      subject: subjectId,
+      semester: parseInt(semester),
+      date
+    });
+
+    if (attendanceRecord) {
+      const studentMap = {};
+      attendanceRecord.records.forEach(r => {
+        studentMap[r.student.toString()] = r.isPresent;
+      });
+
+      return res.status(200).json({
+        success: true,
+        isMarked: true,
+        date,
+        records: studentMap,
+        message: `Attendance for ${date} has already been marked and is locked until the next date.`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      isMarked: false,
+      date
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Mark attendance for students in a subject (locked once submitted for a date)
 export const markAttendance = async (req, res) => {
   try {
-    const { subjectId, semester, attendanceData } = req.body;
+    const { subjectId, semester, attendanceData, date } = req.body;
 
-    console.log(`📋 markAttendance called - subjectId: ${subjectId}, semester: ${semester}`);
+    const attendanceDate = date || new Date().toISOString().split("T")[0];
+
+    // Check if attendance for this date has already been marked
+    const existingRecord = await Attendance.findOne({
+      subject: subjectId,
+      semester: parseInt(semester),
+      date: attendanceDate
+    });
+
+    if (existingRecord) {
+      return res.status(400).json({
+        success: false,
+        message: `Attendance for ${attendanceDate} has already been marked and cannot be changed until the next date.`
+      });
+    }
+
+    console.log(`📋 markAttendance called - subjectId: ${subjectId}, semester: ${semester}, date: ${attendanceDate}`);
     console.log(`   Students to mark: ${Object.keys(attendanceData).length}`);
 
+    const attendanceRecords = [];
+
     for (const [studentId, isPresent] of Object.entries(attendanceData)) {
+      attendanceRecords.push({
+        student: studentId,
+        isPresent: Boolean(isPresent)
+      });
 
       let record = await StudentSubject.findOne({
         student: studentId,
@@ -65,15 +129,15 @@ export const markAttendance = async (req, res) => {
         });
       }
 
-      // 🔥 Increment total classes
+      // Increment total classes
       record.classesHeld += 1;
 
-      // 🔥 Increment attended if present
+      // Increment attended if present
       if (isPresent) {
         record.classesAttended += 1;
       }
 
-      // 🔥 Calculate percentage
+      // Calculate percentage
       record.attendance =
         (record.classesAttended / record.classesHeld) * 100;
 
@@ -81,12 +145,28 @@ export const markAttendance = async (req, res) => {
       console.log(`   ✅ Updated student ${studentId}: Attendance = ${record.attendance}%`);
     }
 
+    // Save attendance document for this date
+    const newAttendance = new Attendance({
+      subject: subjectId,
+      semester: parseInt(semester),
+      faculty: req.user?.refId || null,
+      date: attendanceDate,
+      records: attendanceRecords
+    });
+    await newAttendance.save();
+
     res.status(200).json({
       success: true,
-      message: "Attendance updated correctly"
+      message: `Attendance successfully marked and recorded for ${attendanceDate}`
     });
 
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "Attendance for this date has already been recorded and locked."
+      });
+    }
     res.status(500).json({ message: error.message });
   }
 };
@@ -99,9 +179,6 @@ export const updateMarks = async (req, res) => {
     console.log(`📝 updateMarks called - examType: ${examType}, subjectId: ${subjectId}, semester: ${semester}`);
     console.log(`   Students to update: ${Object.keys(marksData).length}`);
     
-    // examType: 'internal' | 'external' | 'Practical'
-    // marksData = { studentId: marks } e.g., { "123": 25, "456": 20 }
-
     // Max marks validation
     const maxMarks = {
       internal: 30,
@@ -142,7 +219,7 @@ export const updateMarks = async (req, res) => {
           semester: semester
         },
         updateData,
-        { new: true, upsert: true }  // ✅ upsert: true creates record if not found
+        { new: true, upsert: true }
       );
 
       console.log(`   ✅ Updated student ${studentId}: ${fieldName} = ${marks}`);
@@ -173,7 +250,6 @@ export const updateMarks = async (req, res) => {
 
 export const getFacultyProfile = async (req, res) => {
   try {
-
     const facultyId = req.user.refId;
 
     const faculty = await Faculty.findById(facultyId);
@@ -236,4 +312,3 @@ export const getSubjectMarksData = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-

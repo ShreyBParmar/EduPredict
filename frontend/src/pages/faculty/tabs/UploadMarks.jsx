@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useSubject } from '../../../context/subjectContext';
+import { useToast } from '../../../context/toastContext';
 import { getStudentsBySemester, updateMarks } from '../../../services/facultyApi';
-import { BookOpen, Award, UploadCloud } from 'lucide-react';
+import { BookOpen, Award, UploadCloud, Loader2 } from 'lucide-react';
 import { SkeletonTable } from '../../../components/ui/Skeleton';
 
 const UploadMarks = () => {
   const { selectedSubject } = useSubject();
+  const toast = useToast();
 
   const [examType, setExamType] = useState('internal');
   const [students, setStudents] = useState([]);
   const [marks, setMarks] = useState({});
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const examTypes = [
     { value: 'internal', label: 'Internal Marks (Max: 30)', max: 30 },
@@ -40,17 +43,17 @@ const UploadMarks = () => {
     try {
       setLoading(true);
       const data = await getStudentsBySemester(selectedSubject.semester);
-      setStudents(data.students);
+      setStudents(data.students || []);
       
       // Initialize marks
       const initialMarks = {};
-      data.students.forEach(student => {
+      (data.students || []).forEach(student => {
         initialMarks[student._id] = '';
       });
       setMarks(initialMarks);
     } catch (error) {
       console.error('Error fetching students:', error);
-      alert('Failed to fetch students');
+      toast.error('Failed to fetch students. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -66,12 +69,13 @@ const UploadMarks = () => {
   const handleSubmit = async () => {
     try {
       if (!selectedSubject?._id) {
-        alert('Please select a subject');
+        toast.warning('Please select a subject first.');
         return;
       }
 
       // Validate marks before submission
-      const maxMark = examTypes.find(e => e.value === examType)?.max || 30;
+      const currentCategory = examTypes.find(e => e.value === examType);
+      const maxMark = currentCategory?.max || 30;
       const marksToSubmit = {};
       let hasMarks = false;
       
@@ -83,7 +87,7 @@ const UploadMarks = () => {
         hasMarks = true;
         const mark = parseFloat(markValue);
         if (isNaN(mark) || mark < 0 || mark > maxMark) {
-          alert(`${examType} marks must be between 0 and ${maxMark}`);
+          toast.error(`${currentCategory?.label || examType} must be between 0 and ${maxMark}.`);
           return;
         }
         
@@ -91,12 +95,14 @@ const UploadMarks = () => {
       }
 
       if (!hasMarks) {
-        alert('Please enter marks for at least one student');
+        toast.warning('Please enter marks for at least one student before submitting.');
         return;
       }
 
+      setSubmitting(true);
       await updateMarks(selectedSubject._id, selectedSubject.semester, examType, marksToSubmit);
-      alert('Marks submitted successfully!');
+      
+      toast.success(`${currentCategory?.label || examType} marks updated successfully for ${Object.keys(marksToSubmit).length} student(s)!`);
       
       // Reset marks
       const initialMarks = {};
@@ -107,7 +113,9 @@ const UploadMarks = () => {
       
     } catch (error) {
       console.error('Error submitting marks:', error);
-      alert('Failed to submit marks');
+      toast.error(error.response?.data?.message || 'Failed to submit marks. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -195,7 +203,8 @@ const UploadMarks = () => {
                             max={examTypes.find(e => e.value === examType)?.max}
                             value={marks[student._id] || ''}
                             onChange={(e) => handleMarkChange(student._id, e.target.value)}
-                            className="w-24 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-center text-sm font-semibold text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all"
+                            disabled={submitting}
+                            className="w-24 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-center text-sm font-semibold text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all disabled:opacity-50"
                             placeholder="0"
                           />
                         </td>
@@ -211,11 +220,20 @@ const UploadMarks = () => {
           <div className="pt-2">
             <button
               onClick={handleSubmit}
-              disabled={!selectedSubject?._id || !hasMarksEntered}
+              disabled={!selectedSubject?._id || !hasMarksEntered || submitting}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-blue-600/20 transition-all disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed cursor-pointer"
             >
-              <UploadCloud size={16} />
-              <span>Submit Evaluation Marks</span>
+              {submitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Submitting Marks...</span>
+                </>
+              ) : (
+                <>
+                  <UploadCloud size={16} />
+                  <span>Submit Evaluation Marks</span>
+                </>
+              )}
             </button>
           </div>
         </div>

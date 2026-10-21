@@ -18,11 +18,22 @@ export const getStudentsBySemester = async (semester) => {
   return res.data;
 };
 
-export const markAttendance = async (subjectId, semester, attendanceData) => {
+export const markAttendance = async (subjectId, semester, attendanceData, date) => {
   const token = localStorage.getItem("token");
   const res = await axios.post(
     `${API}/mark-attendance`,
-    { subjectId, semester, attendanceData },
+    { subjectId, semester, attendanceData, date },
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+  return res.data;
+};
+
+export const getAttendanceStatus = async (subjectId, semester, date) => {
+  const token = localStorage.getItem("token");
+  const res = await axios.get(
+    `${API}/attendance-status?subjectId=${subjectId}&semester=${semester}&date=${date}`,
     {
       headers: { Authorization: `Bearer ${token}` }
     }
@@ -53,55 +64,18 @@ export const getSubjectMarksData = async (subjectId, semester) => {
   return res.data;
 };
 
-{/*
-  export const getFacultyProfile = async () => {
-
-  const token = localStorage.getItem("token");
-
-  const res = await axios.get(
-    "import.meta.env.VITE_API_URL/api/faculty/profile",
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
-  );
-
-  return res.data;
-};
-*/ }
-{/* 
-const API = `${import.meta.env.VITE_API_URL}/api/faculty`;
-
-export const getFacultyProfile = async () => {
-
-  const token = localStorage.getItem("token");
-
-  const res = await axios.get(`${API}/profile`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-
-  return res.data;
-};
-*/}
 export const getSubjectsBySemester = async (semester) => {
-
   const token = localStorage.getItem("token");
-
   const res = await axios.get(`${API}/subjects/${semester}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
-
   return res.data;
 };
 
 export const getStudentsBySubject = async (subjectId) => {
-
   const token = localStorage.getItem("token");
-
   const res = await axios.get(`${API}/students/${subjectId}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
-
   return res.data;
 };

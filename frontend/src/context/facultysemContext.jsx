@@ -7,7 +7,7 @@ export const SubjectProvider =({children})=>{
 
 
     return(
-        <facultySem.Provider value={sem,setSem}>
+        <facultySem.Provider value={{sem, setSem}}>
             {children}
         </facultySem.Provider>
     )
