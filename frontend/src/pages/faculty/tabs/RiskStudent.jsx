@@ -3,7 +3,7 @@ import axios from "axios";
 import { useSubject } from "../../../context/subjectContext";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { ShieldAlert, ShieldCheck, Shield, AlertTriangle, Filter, ArrowUpDown, Info } from "lucide-react";
+import { ShieldAlert, ShieldCheck, Shield, AlertTriangle, Filter, ArrowUpDown, Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { Skeleton, SkeletonKPICards, SkeletonTable } from "../../../components/ui/Skeleton";
 
 // Register ChartJS components
@@ -59,6 +59,25 @@ const RiskStudent = () => {
 
     setFilteredStudents(filtered);
   }, [students, sortBy, filterBy]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset current page to 1 whenever filters, sort, or subject changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedSubject?._id, selectedSubject?.semester, filterBy, sortBy]);
+
+  const totalPages = Math.ceil(filteredStudents.length / 5);
+
+  // Handle case where filtering reduces the number of available pages
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const startIndex = (currentPage - 1) * 5;
+  const paginatedStudents = filteredStudents.slice(startIndex, startIndex + 5);
 
   const fetchRiskStudents = async () => {
     try {
@@ -318,7 +337,7 @@ const RiskStudent = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredStudents.map((student) => {
+                {paginatedStudents.map((student) => {
                   let badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
                   if (student.riskLevel === "High") badgeColor = "bg-rose-50 text-rose-700 border-rose-200";
                   if (student.riskLevel === "Medium") badgeColor = "bg-amber-50 text-amber-700 border-amber-200";
@@ -351,6 +370,62 @@ const RiskStudent = () => {
               </tbody>
             </table>
           )}
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="px-5 py-3.5 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50">
+          <div className="text-xs text-slate-500 font-medium">
+            {filteredStudents.length === 0 ? (
+              <span>Showing 0 students</span>
+            ) : (
+              <span>
+                Showing <span className="font-semibold text-slate-700">{startIndex + 1}</span> to{" "}
+                <span className="font-semibold text-slate-700">
+                  {Math.min(startIndex + 5, filteredStudents.length)}
+                </span>{" "}
+                of <span className="font-semibold text-slate-700">{filteredStudents.length}</span> students
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage <= 1 || totalPages === 0}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              <ChevronLeft size={14} />
+              <span>Previous</span>
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+              const isActive = pageNum === currentPage;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`min-w-8 h-8 px-2 flex items-center justify-center text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                    isActive
+                      ? "bg-blue-600 text-white shadow-xs font-bold"
+                      : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  }`}
+                  aria-label={`Page ${pageNum}`}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage >= totalPages || totalPages === 0}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              <span>Next</span>
+              <ChevronRight size={14} />
+            </button>
+          </div>
         </div>
       </div>
 
