@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSubject } from '../../../context/subjectContext';
 import { useToast } from '../../../context/toastContext';
 import { getStudentsBySemester, markAttendance, getAttendanceStatus } from '../../../services/facultyApi';
-import { Calendar, BookOpen, Users, Save, Lock, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
+import { Calendar, BookOpen, Users, Save, Lock, CheckCircle2, AlertTriangle, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SkeletonChecklist } from '../../../components/ui/Skeleton';
 
 const MarkAttendence = () => {
@@ -28,6 +28,23 @@ const MarkAttendence = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [lockMessage, setLockMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when subject or date changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedSubject?._id, selectedSubject?.semester, selectedDate]);
+
+  const totalPages = Math.ceil(students.length / 5);
+
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const startIndex = (currentPage - 1) * 5;
+  const paginatedStudents = students.slice(startIndex, startIndex + 5);
 
   // Fetch students when subject changes
   useEffect(() => {
@@ -297,48 +314,106 @@ const MarkAttendence = () => {
           ) : students.length === 0 ? (
             <p className="text-xs text-slate-500 text-center py-8">No students found in this semester</p>
           ) : (
-            <div className="max-h-96 overflow-y-auto border border-slate-200 rounded-xl p-3 space-y-1.5 bg-slate-50/50">
-              {students.map((student) => {
-                const isChecked = attendance[student._id] || false;
-                return (
-                  <label
-                    key={student._id}
-                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                      isLocked ? "cursor-not-allowed opacity-80" : "cursor-pointer"
-                    } ${
-                      isChecked
-                        ? "bg-blue-50/70 border-blue-200 text-blue-950 font-medium"
-                        : "bg-white border-slate-100 hover:border-slate-200 text-slate-800"
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      disabled={isLocked || submitting}
-                      onChange={() => handleAttendanceToggle(student._id)}
-                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    />
-                    <div className="flex-1 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-900">{student.fullName}</span>
-                        {isLocked && isChecked && (
-                          <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
-                            <CheckCircle2 size={10} /> Present
-                          </span>
-                        )}
-                        {isLocked && !isChecked && (
-                          <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-rose-700 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
-                            Absent
-                          </span>
-                        )}
+            <div className="space-y-3">
+              <div className="border border-slate-200 rounded-xl p-3 space-y-1.5 bg-slate-50/50">
+                {paginatedStudents.map((student) => {
+                  const isChecked = attendance[student._id] || false;
+                  return (
+                    <label
+                      key={student._id}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                        isLocked ? "cursor-not-allowed opacity-80" : "cursor-pointer"
+                      } ${
+                        isChecked
+                          ? "bg-blue-50/70 border-blue-200 text-blue-950 font-medium"
+                          : "bg-white border-slate-100 hover:border-slate-200 text-slate-800"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        disabled={isLocked || submitting}
+                        onChange={() => handleAttendanceToggle(student._id)}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                      <div className="flex-1 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-slate-900">{student.fullName}</span>
+                          {isLocked && isChecked && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                              <CheckCircle2 size={10} /> Present
+                            </span>
+                          )}
+                          {isLocked && !isChecked && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-rose-700 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
+                              Absent
+                            </span>
+                          )}
+                        </div>
+                        <span className="font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                          ID: {student.enrollmentId}
+                        </span>
                       </div>
-                      <span className="font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                        ID: {student.enrollmentId}
-                      </span>
-                    </div>
-                  </label>
-                );
-              })}
+                    </label>
+                  );
+                })}
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="px-4 py-3 rounded-xl border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50">
+                <div className="text-xs text-slate-500 font-medium">
+                  {students.length === 0 ? (
+                    <span>Showing 0 students</span>
+                  ) : (
+                    <span>
+                      Showing <span className="font-semibold text-slate-700">{startIndex + 1}</span> to{" "}
+                      <span className="font-semibold text-slate-700">
+                        {Math.min(startIndex + 5, students.length)}
+                      </span>{" "}
+                      of <span className="font-semibold text-slate-700">{students.length}</span> students
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage <= 1 || totalPages === 0}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft size={14} />
+                    <span>Previous</span>
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                    const isActive = pageNum === currentPage;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`min-w-8 h-8 px-2 flex items-center justify-center text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                          isActive
+                            ? "bg-blue-600 text-white shadow-xs font-bold"
+                            : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        }`}
+                        aria-label={`Page ${pageNum}`}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage >= totalPages || totalPages === 0}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  >
+                    <span>Next</span>
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

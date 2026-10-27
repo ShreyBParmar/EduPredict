@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSubject } from '../../../context/subjectContext';
 import { useToast } from '../../../context/toastContext';
 import { getStudentsBySemester, updateMarks } from '../../../services/facultyApi';
-import { BookOpen, Award, UploadCloud, Loader2 } from 'lucide-react';
+import { BookOpen, Award, UploadCloud, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SkeletonTable } from '../../../components/ui/Skeleton';
 
 const UploadMarks = () => {
@@ -14,6 +14,23 @@ const UploadMarks = () => {
   const [marks, setMarks] = useState({});
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when subject or examType changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedSubject?._id, selectedSubject?.semester, examType]);
+
+  const totalPages = Math.ceil(students.length / 5);
+
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const startIndex = (currentPage - 1) * 5;
+  const paginatedStudents = students.slice(startIndex, startIndex + 5);
 
   const examTypes = [
     { value: 'internal', label: 'Internal Marks (Max: 30)', max: 30 },
@@ -192,7 +209,7 @@ const UploadMarks = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {students.map(student => (
+                    {paginatedStudents.map(student => (
                       <tr key={student._id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="px-6 py-4 font-semibold text-slate-900">{student.fullName}</td>
                         <td className="px-6 py-4 font-mono text-xs text-slate-500">{student.enrollmentId}</td>
@@ -212,6 +229,62 @@ const UploadMarks = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="px-5 py-3.5 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50">
+                <div className="text-xs text-slate-500 font-medium">
+                  {students.length === 0 ? (
+                    <span>Showing 0 students</span>
+                  ) : (
+                    <span>
+                      Showing <span className="font-semibold text-slate-700">{startIndex + 1}</span> to{" "}
+                      <span className="font-semibold text-slate-700">
+                        {Math.min(startIndex + 5, students.length)}
+                      </span>{" "}
+                      of <span className="font-semibold text-slate-700">{students.length}</span> students
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage <= 1 || totalPages === 0}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft size={14} />
+                    <span>Previous</span>
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                    const isActive = pageNum === currentPage;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`min-w-8 h-8 px-2 flex items-center justify-center text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                          isActive
+                            ? "bg-blue-600 text-white shadow-xs font-bold"
+                            : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        }`}
+                        aria-label={`Page ${pageNum}`}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage >= totalPages || totalPages === 0}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  >
+                    <span>Next</span>
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           )}
